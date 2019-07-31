@@ -161,7 +161,7 @@ static QString decideStatusText(const collision_detection::CollisionEnv::ObjectC
 {
   QString status_text = "'" + QString::fromStdString(obj->id_) + "' is a collision object with ";
   if (obj->shapes_.empty())
-    status_text += "no geometry";
+    status_text += "no geometry.\n";
   else
   {
     std::vector<QString> shape_names;
@@ -175,6 +175,17 @@ static QString decideStatusText(const collision_detection::CollisionEnv::ObjectC
       for (const QString& shape_name : shape_names)
         status_text += " " + shape_name;
     }
+    status_text += ".";
+  }
+  if (obj->subframe_poses_.size() > 0)
+  {
+    status_text += "\nIt has the subframes '";
+    for (auto frame : obj->subframe_poses_)
+    {
+      status_text += QString::fromStdString(frame.first) + "', '";
+    }
+    status_text.chop(3);
+    status_text += ".";
   }
   return status_text;
 }
@@ -182,7 +193,17 @@ static QString decideStatusText(const collision_detection::CollisionEnv::ObjectC
 static QString decideStatusText(const moveit::core::AttachedBody* attached_body)
 {
   QString status_text = "'" + QString::fromStdString(attached_body->getName()) + "' is attached to '" +
-                        QString::fromStdString(attached_body->getAttachedLinkName()) + "'";
+                        QString::fromStdString(attached_body->getAttachedLinkName()) + "'.";
+  if (attached_body->getSubframeTransforms().size() > 0)
+  {
+    status_text += "\nIt has the subframes '";
+    for (auto ab : attached_body->getSubframeTransforms())
+    {
+      status_text += QString::fromStdString(ab.first) + "', '";
+    }
+    status_text.chop(3);
+    status_text += ".";
+  }
   return status_text;
 }
 
