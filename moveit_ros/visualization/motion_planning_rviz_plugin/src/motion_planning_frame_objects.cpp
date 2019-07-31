@@ -228,7 +228,7 @@ static QString decideStatusText(const collision_detection::CollisionEnv::ObjectC
 {
   QString status_text = "'" + QString::fromStdString(obj->id_) + "' is a collision object with ";
   if (obj->shapes_.empty())
-    status_text += "no geometry";
+    status_text += "no geometry.\n";
   else
   {
     std::vector<QString> shape_names;
