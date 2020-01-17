@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find o2as_moveit_config)/launch/demo.launch"/>
+  <test pkg="moveit_commander" type="python_moveit_commander_robot_trajectory.py" test-name="python_moveit_commander_robot_trajectory"
+        time-limit="300" args=""/>
+</launch>

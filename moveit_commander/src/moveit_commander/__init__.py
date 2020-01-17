@@ -4,3 +4,4 @@ from .planning_scene_interface import *
 from .move_group import *
 from .robot import *
 from .interpreter import *
+from .robot_trajectory import *
