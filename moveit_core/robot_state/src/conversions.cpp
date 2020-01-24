@@ -227,10 +227,9 @@ static void _attachedBodyToMsg(const AttachedBody& attached_body, moveit_msgs::A
   }
 }
 
-static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::AttachedCollisionObject& aco, RobotState& state)
+void msgToAttachedBody(const Transforms* tf, const RobotState& state, const moveit_msgs::AttachedCollisionObject& aco,
+                       AttachedBody* attached_body)
 {
-  if (aco.object.operation == moveit_msgs::CollisionObject::ADD)
-  {
     if (!aco.object.primitives.empty() || !aco.object.meshes.empty() || !aco.object.planes.empty())
     {
       if (aco.object.primitives.size() != aco.object.primitive_poses.size())
@@ -338,18 +337,29 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
                           aco.link_name.c_str(), aco.object.id.c_str());
         else
         {
-          if (state.clearAttachedBody(aco.object.id))
-            ROS_DEBUG_NAMED(LOGNAME, "The robot state already had an object named '%s' attached to link '%s'. "
-                                     "The object was replaced.",
-                            aco.object.id.c_str(), aco.link_name.c_str());
-          state.attachBody(aco.object.id, shapes, poses, aco.touch_links, aco.link_name, aco.detach_posture,
-                           subframe_poses);
-          ROS_DEBUG_NAMED(LOGNAME, "Attached object '%s' to link '%s'", aco.object.id.c_str(), aco.link_name.c_str());
+          std::set<std::string> touch_links_set(aco.touch_links.begin(), aco.touch_links.end());
+          attached_body =
+              new AttachedBody(lm, aco.object.id, shapes, poses, touch_links_set, aco.detach_posture, subframe_poses);
         }
       }
     }
     else
       ROS_ERROR_NAMED(LOGNAME, "The attached body for link '%s' has no geometry", aco.link_name.c_str());
+}
+
+static void _processAttachedCollisionObjectMsg(const Transforms* tf, const moveit_msgs::AttachedCollisionObject& aco,
+                                               RobotState& state)
+{
+  if (aco.object.operation == moveit_msgs::CollisionObject::ADD)
+  {
+    AttachedBody* body_to_attach;
+    msgToAttachedBody(tf, state, aco, body_to_attach);
+          if (state.clearAttachedBody(aco.object.id))
+            ROS_DEBUG_NAMED(LOGNAME, "The robot state already had an object named '%s' attached to link '%s'. "
+                                     "The object was replaced.",
+                            aco.object.id.c_str(), aco.link_name.c_str());
+          state.attachBody(body_to_attach);
+          ROS_DEBUG_NAMED(LOGNAME, "Attached object '%s' to link '%s'", aco.object.id.c_str(), aco.link_name.c_str());
   }
   else if (aco.object.operation == moveit_msgs::CollisionObject::REMOVE)
   {
@@ -382,7 +392,7 @@ static bool _robotStateMsgToRobotStateHelper(const Transforms* tf, const moveit_
     if (!robot_state.is_diff)
       state.clearAttachedBodies();
     for (const moveit_msgs::AttachedCollisionObject& attached_collision_object : robot_state.attached_collision_objects)
-      _msgToAttachedBody(tf, attached_collision_object, state);
+      _processAttachedCollisionObjectMsg(tf, attached_collision_object, state);
   }
 
   return valid;
