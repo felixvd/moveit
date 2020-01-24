@@ -1642,6 +1642,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       const std::vector<shapes::ShapeConstPtr>& shapes = attached_body->getShapes();
       const EigenSTL::vector_Isometry3d& poses = attached_body->getGlobalCollisionBodyTransforms();
       const std::string& name = attached_body->getName();
+      const moveit::core::FixedTransformsMap subframe_poses = attached_body->getSubframeTransforms();
 
       if (world_->hasObject(name))
         ROS_WARN_NAMED(LOGNAME,
@@ -1651,6 +1652,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       else
       {
         world_->addToObject(name, shapes, poses);
+        world_->setSubframesOfObject(name, subframe_poses);
         ROS_DEBUG_NAMED(LOGNAME, "Detached object '%s' from link '%s' and added it back in the collision world",
                         name.c_str(), object.link_name.c_str());
       }
@@ -1813,6 +1815,7 @@ bool PlanningScene::processCollisionObjectMove(const moveit_msgs::CollisionObjec
       ROS_WARN_NAMED(LOGNAME, "Move operation for object '%s' ignores the geometry specified in the message.",
                      object.id.c_str());
 
+    // Update shape poses
     const Eigen::Isometry3d& t = getTransforms().getTransform(object.header.frame_id);
     EigenSTL::vector_Isometry3d new_poses;
     for (const geometry_msgs::Pose& primitive_pose : object.primitive_poses)
@@ -1835,12 +1838,32 @@ bool PlanningScene::processCollisionObjectMove(const moveit_msgs::CollisionObjec
     }
 
     collision_detection::World::ObjectConstPtr obj = world_->getObject(object.id);
+
+    // Update subframe poses
+    moveit::core::FixedTransformsMap subframe_poses = obj->subframe_poses_;
+    if (!object.subframe_poses.empty())
+    {
+      Eigen::Isometry3d frame_pose;
+      for (std::size_t i = 0; i < object.subframe_poses.size(); ++i)
+      {
+        tf2::fromMsg(object.subframe_poses[i], frame_pose);
+        std::string name = object.subframe_names[i];
+        subframe_poses[name] = t * frame_pose;
+      }
+    }
+    else if (!obj->subframe_poses_.empty())  // If there were subframes but no new poses are given
+    {
+      ROS_WARN_NAMED(LOGNAME, "Object '%s' had subframes, but no new ones were given for Move operation. ",
+                     object.id.c_str());
+    }
+    
     if (obj->shapes_.size() == new_poses.size())
     {
       std::vector<shapes::ShapeConstPtr> shapes = obj->shapes_;
       obj.reset();
       world_->removeObject(object.id);
       world_->addToObject(object.id, shapes, new_poses);
+      world_->setSubframesOfObject(object.id, subframe_poses);
     }
     else
     {
