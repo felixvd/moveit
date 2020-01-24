@@ -1780,7 +1780,7 @@ bool PlanningScene::processCollisionObjectAdd(const moveit_msgs::CollisionObject
     setObjectType(object.id, object.type);
 
   // Add subframes
-  moveit::core::FixedTransformsMap subframes;
+  moveit::core::FixedTransformsMap subframes = world_->getObject(object.id)->subframe_poses_;
   Eigen::Isometry3d frame_pose;
   for (std::size_t i = 0; i < object.subframe_poses.size(); ++i)
   {
