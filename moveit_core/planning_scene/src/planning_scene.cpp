@@ -1435,13 +1435,11 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
     {
       // items to build the attached object from (filled from existing world object or message)
       std::vector<shapes::ShapeConstPtr> shapes;
-      EigenSTL::vector_Isometry3d poses;
+      EigenSTL::vector_Isometry3d shape_poses;
       moveit::core::FixedTransformsMap subframe_poses;
+      robot_state::AttachedBody* body_to_attach;
 
-      // STEP 1: Get info about object from the world. First shapes, then subframes.
-      // TODO(felixvd): This code may be duplicated in robot_state/conversions.cpp
-
-      // STEP 1.1: Get shapes and poses from existing world object or message.
+      // STEP 1: Get info about object from either the existing world object or the message.
       collision_detection::CollisionEnv::ObjectConstPtr obj_in_world = world_->getObject(object.object.id);
       if (object.object.operation == moveit_msgs::CollisionObject::ADD && object.object.primitives.empty() &&
           object.object.meshes.empty() && object.object.planes.empty())
@@ -1452,14 +1450,21 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
                           object.link_name.c_str());
           // Extract the shapes from the world
           shapes = obj_in_world->shapes_;
-          poses = obj_in_world->shape_poses_;
-          // Remove the object from the collision world
-          world_->removeObject(object.object.id);
-
+          shape_poses = obj_in_world->shape_poses_;
           // Transform shape poses to the link frame
           const Eigen::Isometry3d& inv_transform = robot_state_->getGlobalLinkTransform(link_model).inverse();
-          for (Eigen::Isometry3d& pose : poses)
+          for (Eigen::Isometry3d& pose : shape_poses)
             pose = inv_transform * pose;
+
+          // Get subframes from previous world object or the message
+          subframe_poses = obj_in_world->subframe_poses_;
+          // Transform subframes to the link frame
+          for (auto& subframe : subframe_poses)
+            subframe.second = inv_transform * subframe.second;
+          
+          body_to_attach = new AttachedBody(link_model, object.object.id, shapes, 
+                          shape_poses, object.touch_links, object.detach_posture, 
+                          subframe_poses);
         }
         else
         {
@@ -1471,88 +1476,13 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       }
       else  // If object is not in the world, fill shapes and poses with the message contents
       {
-        for (std::size_t i = 0; i < object.object.primitives.size(); ++i)
-        {
-          if (shapes::Shape* s = shapes::constructShapeFromMsg(object.object.primitives[i]))
-          {
-            Eigen::Isometry3d p;
-            tf2::fromMsg(object.object.primitive_poses[i], p);
-            shapes.push_back(shapes::ShapeConstPtr(s));
-            poses.push_back(p);
-          }
-        }
-        for (std::size_t i = 0; i < object.object.meshes.size(); ++i)
-        {
-          if (shapes::Shape* s = shapes::constructShapeFromMsg(object.object.meshes[i]))
-          {
-            Eigen::Isometry3d p;
-            tf2::fromMsg(object.object.mesh_poses[i], p);
-            shapes.push_back(shapes::ShapeConstPtr(s));
-            poses.push_back(p);
-          }
-        }
-        for (std::size_t i = 0; i < object.object.planes.size(); ++i)
-        {
-          if (shapes::Shape* s = shapes::constructShapeFromMsg(object.object.planes[i]))
-          {
-            Eigen::Isometry3d p;
-            tf2::fromMsg(object.object.plane_poses[i], p);
-            shapes.push_back(shapes::ShapeConstPtr(s));
-            poses.push_back(p);
-          }
-        }
-
-        // Transform shape poses to link frame
-        if (object.object.header.frame_id != object.link_name)
-        {
-          const Eigen::Isometry3d& transform = robot_state_->getGlobalLinkTransform(link_model).inverse() *
-                                               getTransforms().getTransform(object.object.header.frame_id);
-          for (Eigen::Isometry3d& pose : poses)
-            pose = transform * pose;
-        }
-      }
-
-      if (shapes.empty())
-      {
-        ROS_ERROR_NAMED(LOGNAME, "There is no geometry to attach to link '%s' as part of attached body '%s'",
-                        object.link_name.c_str(), object.object.id.c_str());
-        return false;
+        msgToAttachedBody(getTransforms(), robot_state_, object, body_to_attach);
       }
 
       if (!object.object.type.db.empty() || !object.object.type.key.empty())
         setObjectType(object.object.id, object.object.type);
 
-      // STEP 1.2: Get subframes from previous world object or the message
-      if (object.object.operation == moveit_msgs::CollisionObject::ADD && obj_in_world &&
-          object.object.subframe_poses.empty())
-      {
-        subframe_poses = obj_in_world->subframe_poses_;
-        // Transform subframes to the link frame
-        const Eigen::Isometry3d& inv_transform = robot_state_->getGlobalLinkTransform(link_model).inverse();
-        for (auto& subframe : subframe_poses)
-          subframe.second = inv_transform * subframe.second;
-      }
-      else  // Populate subframes from message
-      {
-        Eigen::Isometry3d p;
-        for (std::size_t i = 0; i < object.object.subframe_poses.size(); ++i)
-        {
-          tf2::fromMsg(object.object.subframe_poses[i], p);
-          std::string name = object.object.subframe_names[i];
-          subframe_poses[name] = p;
-        }
-
-        // Transform subframes to the link frame
-        if (object.object.header.frame_id != object.link_name)
-        {
-          const Eigen::Isometry3d& transform = robot_state_->getGlobalLinkTransform(link_model).inverse() *
-                                               getTransforms().getTransform(object.object.header.frame_id);
-          for (auto& subframe : subframe_poses)
-            subframe.second = transform * subframe.second;
-        }
-      }
-
-      // STEP 2: Remove the object from the world
+      // STEP 2:  Remove the object from the world
       if (obj_in_world && world_->removeObject(object.object.id))
       {
         if (object.object.operation == moveit_msgs::CollisionObject::ADD)
@@ -1573,13 +1503,13 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
                                    "The object was replaced.",
                           object.object.id.c_str(), object.link_name.c_str());
 
-        robot_state_->attachBody(object.object.id, shapes, poses, object.touch_links, object.link_name,
-                                 object.detach_posture, subframe_poses);
-        ROS_DEBUG_NAMED(LOGNAME, "Attached object '%s' to link '%s'", object.object.id.c_str(),
+        robot_state_->attachBody(body_to_attach);
+        ROS_DEBUG_NAMED(LOGNAME, "Attached object '%s' to link '%s'", object_to_attach.id_.c_str(),
                         object.link_name.c_str());
       }
       else  // APPEND: augment to existing attached object
       {
+        // FIXME (felixvd): This does not work with the changes above.
         const robot_state::AttachedBody* ab = robot_state_->getAttachedBody(object.object.id);
         shapes.insert(shapes.end(), ab->getShapes().begin(), ab->getShapes().end());
         poses.insert(poses.end(), ab->getFixedTransforms().begin(), ab->getFixedTransforms().end());
