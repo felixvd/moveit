@@ -38,13 +38,20 @@
   <depend>tf2_ros</depend>
   <depend>moveit_ros_occupancy_map_monitor</depend>
 
+  <exec_depend>handeye</exec_depend>
+  <exec_depend>criutils</exec_depend>
+  <exec_depend>baldor</exec_depend>
+
   <build_depend>eigen</build_depend>
+  <build_depend>octomap</build_depend>
 
   <test_depend>rosunit</test_depend>
 
   <export>
     <moveit_ros_perception plugin="${prefix}/pointcloud_octomap_updater_plugin_description.xml"/>
     <moveit_ros_perception plugin="${prefix}/depth_image_octomap_updater_plugin_description.xml"/>
+    <moveit_ros_perception plugin="${prefix}/handeye_calibration_solver_plugin_description.xml"/>
+    <moveit_ros_perception plugin="${prefix}/handeye_calibration_target_plugin_description.xml"/>
   </export>
 
 </package>

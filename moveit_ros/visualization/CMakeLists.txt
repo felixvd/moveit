@@ -26,6 +26,8 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning_interface
   moveit_ros_robot_interaction
   moveit_ros_warehouse
+  moveit_visual_tools
+  image_geometry
   object_recognition_msgs
   pluginlib
   rosconsole
@@ -70,17 +72,20 @@ catkin_package(
     moveit_robot_state_rviz_plugin_core
     moveit_rviz_plugin_render_tools
     moveit_trajectory_rviz_plugin_core
+    moveit_handeye_calibration_rviz_plugin_core
   INCLUDE_DIRS
     motion_planning_rviz_plugin/include
     planning_scene_rviz_plugin/include
     robot_state_rviz_plugin/include
     rviz_plugin_render_tools/include
     trajectory_rviz_plugin/include
+    handeye_calibration_rviz_plugin/include
   CATKIN_DEPENDS
     moveit_ros_planning_interface
     moveit_ros_robot_interaction
     object_recognition_msgs
     roscpp
+    moveit_visual_tools
   DEPENDS
     EIGEN3
 )
@@ -93,6 +98,7 @@ include_directories(rviz_plugin_render_tools/include
                     planning_scene_rviz_plugin/include
                     motion_planning_rviz_plugin/include
                     trajectory_rviz_plugin/include
+                    handeye_calibration_rviz_plugin/include
                     ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS})
 
@@ -105,12 +111,14 @@ add_subdirectory(robot_state_rviz_plugin)
 add_subdirectory(planning_scene_rviz_plugin)
 add_subdirectory(motion_planning_rviz_plugin)
 add_subdirectory(trajectory_rviz_plugin)
+add_subdirectory(handeye_calibration_rviz_plugin)
 
 install(FILES
   motion_planning_rviz_plugin_description.xml
   trajectory_rviz_plugin_description.xml
   planning_scene_rviz_plugin_description.xml
   robot_state_rviz_plugin_description.xml
+  handeye_calibration_rviz_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(DIRECTORY icons DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

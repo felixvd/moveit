@@ -28,3 +28,17 @@
     local-name: panda_moveit_config
     uri: https://github.com/ros-planning/panda_moveit_config.git
     version: melodic-devel
+
+# The following packages are required for MoveIt hand-eye calibration
+- git:
+    local-name: handeye
+    uri: https://github.com/crigroup/handeye.git
+    version: master
+- git:
+    local-name: criutils
+    uri: https://github.com/crigroup/criutils.git
+    version: master
+- git:
+    local-name: baldor
+    uri: https://github.com/crigroup/baldor.git
+    version: master
