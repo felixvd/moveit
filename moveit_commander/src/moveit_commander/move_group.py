@@ -568,6 +568,14 @@ class MoveGroupCommander(object):
         else:
             return self._g.pick(object_name, [conversions.msg_to_string(x) for x in grasp], plan_only)
 
+    def get_current_state_bounded(self):
+        """ Get the current state of the robot bounded."""
+        return self._g.get_current_state_bounded()
+    
+    def get_current_state(self):
+        """ Get the current state of the robot."""
+        return self._g.get_current_state()
+
     def place(self, object_name, location=None, plan_only=False):
         """Place the named object at a particular location in the environment or somewhere safe in the world if location is not provided"""
         result = False
