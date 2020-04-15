@@ -177,12 +177,12 @@ static QString decideStatusText(const collision_detection::CollisionEnv::ObjectC
     }
     status_text += ".";
   }
-  if (obj->subframe_poses_.size() > 0)
+  if (!obj->subframe_poses_.empty())
   {
     status_text += "\nIt has the subframes '";
-    for (auto frame : obj->subframe_poses_)
+    for (auto subframe : obj->subframe_poses_)
     {
-      status_text += QString::fromStdString(frame.first) + "', '";
+      status_text += QString::fromStdString(subframe.first) + "', '";
     }
     status_text.chop(3);
     status_text += ".";
@@ -194,7 +194,7 @@ static QString decideStatusText(const moveit::core::AttachedBody* attached_body)
 {
   QString status_text = "'" + QString::fromStdString(attached_body->getName()) + "' is attached to '" +
                         QString::fromStdString(attached_body->getAttachedLinkName()) + "'.";
-  if (attached_body->getSubframeTransforms().size() > 0)
+  if (!attached_body->getSubframeTransforms().empty())
   {
     status_text += "\nIt has the subframes '";
     for (auto ab : attached_body->getSubframeTransforms())
