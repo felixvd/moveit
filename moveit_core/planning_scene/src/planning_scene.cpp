@@ -1621,7 +1621,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       else
       {
         world_->addToObject(name, attached_body->getShapes(), attached_body->getGlobalCollisionBodyTransforms());
-        world_->setSubframesOfObject(name, attached_body->getSubframeTransforms());
+        world_->setSubframesOfObject(name, attached_body->getGlobalSubframeTransforms());
         ROS_DEBUG_NAMED(LOGNAME, "Detached object '%s' from link '%s' and added it back in the collision world",
                         name.c_str(), object.link_name.c_str());
       }
