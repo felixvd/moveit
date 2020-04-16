@@ -170,7 +170,7 @@ const Eigen::Isometry3d& World::getTransform(const std::string& name, bool& fram
 {
   frame_found = true;
   std::map<std::string, ObjectPtr>::const_iterator it = objects_.find(name);
-  if (it != objects_.end())
+  if ((it != objects_.end()) && (it->second->shapes_[0] == shape))
     return it->second->shape_poses_[0];
   else  // Search within subframes
   {
@@ -195,7 +195,7 @@ bool World::moveShapeInObject(const std::string& object_id, const shapes::ShapeC
                               const Eigen::Isometry3d& pose)
 {
   auto it = objects_.find(object_id);
-  if (it != objects_.end())
+  if ((it != objects_.end()) && (it->second->shapes_[0] == shape))
   {
     unsigned int n = it->second->shapes_.size();
     for (unsigned int i = 0; i < n; ++i)
