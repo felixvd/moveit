@@ -166,6 +166,7 @@ void MotionPlanningFrame::sceneScaleChanged(int value)
         {
           shapes::Shape* s = scaled_object_->shapes_[i]->clone();
           s->scale((double)value / 100.0);
+          // TODO(felixvd): Keep the pose and subframes
           ps->getWorldNonConst()->addToObject(scaled_object_->id_, shapes::ShapeConstPtr(s),
                                               scaled_object_->shape_poses_[i]);
         }
@@ -832,10 +833,13 @@ void MotionPlanningFrame::renameCollisionObject(QListWidgetItem* item)
     if (obj)
     {
       known_collision_objects_[item->type()].first = item_text;
+      // const Eigen::Isometry3d pose = obj->id_;
       const moveit::core::FixedTransformsMap subframes = obj->subframe_poses_;  // Keep subframes
       // TODO(felixvd): Scale the subframes with the object
       ps->getWorldNonConst()->removeObject(obj->id_);
-      ps->getWorldNonConst()->addToObject(known_collision_objects_[item->type()].first, obj->shapes_, obj->shape_poses_);
+      ps->getWorldNonConst()->addToObject(known_collision_objects_[item->type()].first, obj->shapes_,
+                                          obj->shape_poses_);
+      // TODO(felixvd): Keep the pose and subframes
       ps->getWorldNonConst()->setSubframesOfObject(obj->id_, subframes);
       if (scene_marker_)
       {

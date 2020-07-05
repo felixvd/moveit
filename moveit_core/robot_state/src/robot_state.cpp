@@ -1553,7 +1553,7 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Is
     }
   }
 
-  // Check that no, or only one set of consistency limits have been passed in, and choose that one
+  // Check that no, or only one set of consistency limits has been passed in, and choose that one
   std::vector<double> consistency_limits;
   if (consistency_limit_sets.size() > 1)
   {
