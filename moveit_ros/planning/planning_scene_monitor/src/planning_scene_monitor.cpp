@@ -471,6 +471,7 @@ void PlanningSceneMonitor::triggerSceneUpdateEvent(SceneUpdateType update_type)
 
 bool PlanningSceneMonitor::requestPlanningSceneState(const std::string& service_name)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM requestPlanningScene State 1");
   if (get_scene_service_.getService() == service_name)
   {
     ROS_FATAL_STREAM_NAMED(LOGNAME, "requestPlanningSceneState() to self-provided service '" << service_name << "'");
@@ -480,6 +481,7 @@ bool PlanningSceneMonitor::requestPlanningSceneState(const std::string& service_
   ros::ServiceClient client = ros::NodeHandle().serviceClient<moveit_msgs::GetPlanningScene>(service_name);
   // all scene components are returned if none are specified
   moveit_msgs::GetPlanningScene srv;
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM requestPlanningScene State 2");
 
   // Make sure client is connected to server
   if (!client.exists())
@@ -487,10 +489,13 @@ bool PlanningSceneMonitor::requestPlanningSceneState(const std::string& service_
     ROS_DEBUG_STREAM_NAMED(LOGNAME, "Waiting for service `" << service_name << "` to exist.");
     client.waitForExistence(ros::Duration(5.0));
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM requestPlanningScene State 3");
 
   if (client.call(srv))
   {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM requestPlanningScene State 4a");
     newPlanningSceneMessage(srv.response.scene);
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM requestPlanningScene State 4b");
   }
   else
   {
@@ -551,75 +556,104 @@ bool PlanningSceneMonitor::newPlanningSceneMessage(const moveit_msgs::PlanningSc
   bool result;
 
   SceneUpdateType upd = UPDATE_SCENE;
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 1");
   std::string old_scene_name;
   {
     boost::unique_lock<boost::shared_mutex> ulock(scene_update_mutex_);
     // we don't want the transform cache to update while we are potentially changing attached bodies
     boost::recursive_mutex::scoped_lock prevent_shape_cache_updates(shape_handles_lock_);
-
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 2");
     last_update_time_ = ros::Time::now();
     last_robot_motion_time_ = scene.robot_state.joint_state.header.stamp;
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 3a");
     ROS_DEBUG_STREAM_NAMED("planning_scene_monitor",
                            "scene update " << fmod(last_update_time_.toSec(), 10.)
                                            << " robot stamp: " << fmod(last_robot_motion_time_.toSec(), 10.));
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 3b");
     old_scene_name = scene_->getName();
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 3c");
     result = scene_->usePlanningSceneMsg(scene);
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 4");
     if (octomap_monitor_)
     {
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 4a");
       if (!scene.is_diff && scene.world.octomap.octomap.data.empty())
       {
+        ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 4b");
         octomap_monitor_->getOcTreePtr()->lockWrite();
+        ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 4c");
         octomap_monitor_->getOcTreePtr()->clear();
+        ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 4d");
         octomap_monitor_->getOcTreePtr()->unlockWrite();
+        ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 4e");
       }
     }
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 5a");
     robot_model_ = scene_->getRobotModel();
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 5b");
 
     // if we just reset the scene completely but we were maintaining diffs, we need to fix that
     if (!scene.is_diff && parent_scene_)
     {
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 6");
       // the scene is now decoupled from the parent, since we just reset it
       scene_->setAttachedBodyUpdateCallback(moveit::core::AttachedBodyCallback());
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 7");
       scene_->setCollisionObjectUpdateCallback(collision_detection::World::ObserverCallbackFn());
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 8");
       parent_scene_ = scene_;
       scene_ = parent_scene_->diff();
       scene_const_ = scene_;
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 9");
       scene_->setAttachedBodyUpdateCallback(
           boost::bind(&PlanningSceneMonitor::currentStateAttachedBodyUpdateCallback, this, _1, _2));
       scene_->setCollisionObjectUpdateCallback(
           boost::bind(&PlanningSceneMonitor::currentWorldObjectUpdateCallback, this, _1, _2));
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 10");
     }
     if (octomap_monitor_)
     {
       excludeAttachedBodiesFromOctree();  // in case updates have happened to the attached bodies, put them in
       excludeWorldObjectsFromOctree();    // in case updates have happened to the attached bodies, put them in
     }
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage 11");
   }
 
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 1");
   // if we have a diff, try to more accuratelly determine the update type
   if (scene.is_diff)
   {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 11");
     bool no_other_scene_upd = (scene.name.empty() || scene.name == old_scene_name) &&
                               scene.allowed_collision_matrix.entry_names.empty() && scene.link_padding.empty() &&
                               scene.link_scale.empty();
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 12");
     if (no_other_scene_upd)
     {
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 13");
       upd = UPDATE_NONE;
       if (!moveit::core::isEmpty(scene.world))
         upd = (SceneUpdateType)((int)upd | (int)UPDATE_GEOMETRY);
-
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 14");
       if (!scene.fixed_frame_transforms.empty())
         upd = (SceneUpdateType)((int)upd | (int)UPDATE_TRANSFORMS);
-
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 15");
       if (!moveit::core::isEmpty(scene.robot_state))
       {
+        ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 151");
         upd = (SceneUpdateType)((int)upd | (int)UPDATE_STATE);
         if (!scene.robot_state.attached_collision_objects.empty() || !static_cast<bool>(scene.robot_state.is_diff))
           upd = (SceneUpdateType)((int)upd | (int)UPDATE_GEOMETRY);
       }
+      ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 16");
     }
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 2");
   triggerSceneUpdateEvent(upd);
+  ROS_INFO_NAMED(LOGNAME, "Printing scene message that is returned:");
+  std::cout << scene.robot_state << std::endl;
+  std::cout << scene.world << std::endl;
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B Fin");
   return result;
 }
 
@@ -792,11 +826,13 @@ void PlanningSceneMonitor::excludeAttachedBodyFromOctree(const moveit::core::Att
     if (attached_body->getShapes()[i]->type == shapes::PLANE || attached_body->getShapes()[i]->type == shapes::OCTREE)
       continue;
     occupancy_map_monitor::ShapeHandle h = octomap_monitor_->excludeShape(attached_body->getShapes()[i]);
+    ROS_WARN_NAMED(LOGNAME, "DEBUG exclude 1");
     if (h)
     {
       found = true;
       attached_body_shape_handles_[attached_body].push_back(std::make_pair(h, i));
     }
+    ROS_WARN_NAMED(LOGNAME, "DEBUG exclude 2");
   }
   if (found)
     ROS_DEBUG_NAMED(LOGNAME, "Excluding attached body '%s' from monitored octomap", attached_body->getName().c_str());
@@ -835,6 +871,7 @@ void PlanningSceneMonitor::excludeWorldObjectFromOctree(const collision_detectio
     if (h)
     {
       // TODO (felixvd): Do these shape poses have to be in the world frame?
+      std::cout << "DEBUG excludeWorldObjectFromOctree: " << obj->global_shape_poses_[i].matrix() << std::endl;
       collision_body_shape_handles_[obj->id_].push_back(std::make_pair(h, &obj->global_shape_poses_[i]));
       found = true;
     }
@@ -1006,12 +1043,14 @@ bool PlanningSceneMonitor::getShapeTransformCache(const std::string& target_fram
     return false;
   try
   {
+    ROS_INFO_NAMED(LOGNAME, "Debug: 1");
     boost::recursive_mutex::scoped_lock _(shape_handles_lock_);
-
+    ROS_INFO_NAMED(LOGNAME, "Debug: 2");
     for (const std::pair<const moveit::core::LinkModel* const,
                          std::vector<std::pair<occupancy_map_monitor::ShapeHandle, std::size_t>>>& link_shape_handle :
          link_shape_handles_)
     {
+      std::cout << "d2 ";
       tf_buffer_->canTransform(target_frame, link_shape_handle.first->getName(), target_time,
                                shape_transform_cache_lookup_wait_time_);
       Eigen::Isometry3d ttr = tf2::transformToEigen(
@@ -1020,19 +1059,28 @@ bool PlanningSceneMonitor::getShapeTransformCache(const std::string& target_fram
         cache[link_shape_handle.second[j].first] =
             ttr * link_shape_handle.first->getCollisionOriginTransforms()[link_shape_handle.second[j].second];
     }
+    ROS_INFO_NAMED(LOGNAME, "Debug: 3 (attached Body cache loop)");
     for (const std::pair<const moveit::core::AttachedBody* const,
                          std::vector<std::pair<occupancy_map_monitor::ShapeHandle, std::size_t>>>&
              attached_body_shape_handle : attached_body_shape_handles_)
     {
+      std::cout << "; ";
       tf_buffer_->canTransform(target_frame, attached_body_shape_handle.first->getAttachedLinkName(), target_time,
                                shape_transform_cache_lookup_wait_time_);
+      std::cout << "a";
       Eigen::Isometry3d transform = tf2::transformToEigen(tf_buffer_->lookupTransform(
           target_frame, attached_body_shape_handle.first->getAttachedLinkName(), target_time));
+      std::cout << "b";
       for (std::size_t k = 0; k < attached_body_shape_handle.second.size(); ++k)
+      {
+        std::cout << "c";
         cache[attached_body_shape_handle.second[k].first] =
             transform *
             attached_body_shape_handle.first->getShapePosesInLinkFrame()[attached_body_shape_handle.second[k].second];
+      }
+      std::cout << " ";
     }
+    ROS_INFO_NAMED(LOGNAME, "Debug: 4");
     {
       tf_buffer_->canTransform(target_frame, scene_->getPlanningFrame(), target_time,
                                shape_transform_cache_lookup_wait_time_);

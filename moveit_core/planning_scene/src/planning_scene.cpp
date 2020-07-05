@@ -761,6 +761,8 @@ bool PlanningScene::getCollisionObjectMsg(moveit_msgs::CollisionObject& collisio
 {
   collision_detection::CollisionEnv::ObjectConstPtr obj = world_->getObject(ns);
   collision_obj.header.frame_id = getPlanningFrame();
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getCollisionObjectMsg obj->pose_:");
+  std::cout << obj->pose_.matrix() << std::endl;
   collision_obj.pose = tf2::toMsg(obj->pose_);
   collision_obj.id = ns;
   collision_obj.operation = moveit_msgs::CollisionObject::ADD;
@@ -1081,21 +1083,32 @@ void PlanningScene::setCurrentState(const moveit_msgs::RobotState& state)
 {
   // The attached bodies will be processed separately by processAttachedCollisionObjectMsgs
   // after robot_state_ has been updated
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 1");
   moveit_msgs::RobotState state_no_attached(state);
   state_no_attached.attached_collision_objects.clear();
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 2");
 
   if (parent_)
   {
     if (!robot_state_)
     {
+      ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 3a");
       robot_state_.reset(new moveit::core::RobotState(parent_->getCurrentState()));
+      ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 3b");
       robot_state_->setAttachedBodyUpdateCallback(current_state_attached_body_callback_);
+      ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 3c");
     }
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 4");
     moveit::core::robotStateMsgToRobotState(getTransforms(), state_no_attached, *robot_state_);
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 5");
   }
   else
+  {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 6");
     moveit::core::robotStateMsgToRobotState(*scene_transforms_, state_no_attached, *robot_state_);
-
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 7");
+  }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 8");
   for (std::size_t i = 0; i < state.attached_collision_objects.size(); ++i)
   {
     if (!state.is_diff && state.attached_collision_objects[i].object.operation != moveit_msgs::CollisionObject::ADD)
@@ -1106,7 +1119,9 @@ void PlanningScene::setCurrentState(const moveit_msgs::RobotState& state)
                       state.attached_collision_objects[i].object.id.c_str());
       continue;
     }
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 9");
     processAttachedCollisionObjectMsg(state.attached_collision_objects[i]);
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setCurrentState 10");
   }
 }
 
@@ -1177,6 +1192,7 @@ void PlanningScene::decoupleParent()
 
 bool PlanningScene::setPlanningSceneDiffMsg(const moveit_msgs::PlanningScene& scene_msg)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneDiffMsg 1");
   bool result = true;
 
   ROS_DEBUG_NAMED(LOGNAME, "Adding planning scene diff");
@@ -1226,24 +1242,29 @@ bool PlanningScene::setPlanningSceneDiffMsg(const moveit_msgs::PlanningScene& sc
   if (!scene_msg.world.octomap.octomap.data.empty())
     processOctomapMsg(scene_msg.world.octomap);
 
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneDiffMsg Fin");
   return result;
 }
 
 bool PlanningScene::setPlanningSceneMsg(const moveit_msgs::PlanningScene& scene_msg)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneMsg 1");
   ROS_DEBUG_NAMED(LOGNAME, "Setting new planning scene: '%s'", scene_msg.name.c_str());
   name_ = scene_msg.name;
-
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneMsg 2");
   if (!scene_msg.robot_model_name.empty() && scene_msg.robot_model_name != getRobotModel()->getName())
     ROS_WARN_NAMED(LOGNAME, "Setting the scene for model '%s' but model '%s' is loaded.",
                    scene_msg.robot_model_name.c_str(), getRobotModel()->getName().c_str());
-
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneMsg 3");
   if (parent_)
     decoupleParent();
-
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneMsg 4");
   object_types_.reset();
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneMsg 5");
   scene_transforms_->setTransforms(scene_msg.fixed_frame_transforms);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneMsg 6");
   setCurrentState(scene_msg.robot_state);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneMsg 7");
   acm_.reset(new collision_detection::AllowedCollisionMatrix(scene_msg.allowed_collision_matrix));
   for (std::pair<const std::string, CollisionDetectorPtr>& it : collision_)
   {
@@ -1253,25 +1274,37 @@ bool PlanningScene::setPlanningSceneMsg(const moveit_msgs::PlanningScene& scene_
   object_colors_.reset(new ObjectColorMap());
   for (const moveit_msgs::ObjectColor& object_color : scene_msg.object_colors)
     setObjectColor(object_color.id, object_color.color);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneMsg 8");
   world_->clearObjects();
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE setPlanningSceneMsg Fin");
   return processPlanningSceneWorldMsg(scene_msg.world);
 }
 
 bool PlanningScene::processPlanningSceneWorldMsg(const moveit_msgs::PlanningSceneWorld& world)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processPlanningSceneWorldMsg 1");
   bool result = true;
   for (const moveit_msgs::CollisionObject& collision_object : world.collision_objects)
     result &= processCollisionObjectMsg(collision_object);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processPlanningSceneWorldMsg 2");
   processOctomapMsg(world.octomap);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processPlanningSceneWorldMsg Fin");
   return result;
 }
 
 bool PlanningScene::usePlanningSceneMsg(const moveit_msgs::PlanningScene& scene_msg)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE usePlanningSceneMsg 1");
   if (scene_msg.is_diff)
+  {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE usePlanningSceneMsg 2");
     return setPlanningSceneDiffMsg(scene_msg);
+  }
   else
+  {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE usePlanningSceneMsg 3");
     return setPlanningSceneMsg(scene_msg);
+  }
 }
 
 void PlanningScene::processOctomapMsg(const octomap_msgs::Octomap& map)
@@ -1369,6 +1402,7 @@ void PlanningScene::processOctomapPtr(const std::shared_ptr<const octomap::OcTre
 
 bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::AttachedCollisionObject& object)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg 1");
   if (object.object.operation == moveit_msgs::CollisionObject::ADD && !getRobotModel()->hasLinkModel(object.link_name))
   {
     ROS_ERROR_NAMED(LOGNAME, "Unable to attach a body to link '%s' (link not found)", object.link_name.c_str());
@@ -1381,12 +1415,15 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
     return false;
   }
 
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg 2");
   if (!robot_state_)  // there must be a parent in this case
   {
     robot_state_.reset(new moveit::core::RobotState(parent_->getCurrentState()));
     robot_state_->setAttachedBodyUpdateCallback(current_state_attached_body_callback_);
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg 3");
   robot_state_->update();
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg 4");
 
   // The ADD/REMOVE operations follow this order:
   // STEP 1: Get info about the object from either the message or the world/RobotState
@@ -1396,6 +1433,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
   if (object.object.operation == moveit_msgs::CollisionObject::ADD ||
       object.object.operation == moveit_msgs::CollisionObject::APPEND)
   {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 1");
     // STEP 0: Check message validity
     if (object.object.primitives.size() != object.object.primitive_poses.size())
     {
@@ -1425,9 +1463,12 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       return false;
     }
 
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 2");
     const moveit::core::LinkModel* link_model = getRobotModel()->getLinkModel(object.link_name);
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 3");
     if (link_model)
     {
+      ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 4");
       // items to build the attached object from (filled from existing world object or message)
       std::vector<shapes::ShapeConstPtr> shapes;
       EigenSTL::vector_Isometry3d shape_poses;
@@ -1437,7 +1478,9 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       //         If it is in the world, message contents are ignored.
 
       collision_detection::CollisionEnv::ObjectConstPtr obj_in_world = world_->getObject(object.object.id);
+      ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 5");
       Eigen::Isometry3d link_frame_to_object_pose_transform;
+      ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 6");
       if (object.object.operation == moveit_msgs::CollisionObject::ADD && object.object.primitives.empty() &&
           object.object.meshes.empty() && object.object.planes.empty())
       {
@@ -1445,11 +1488,20 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
         {
           ROS_DEBUG_NAMED(LOGNAME, "Attaching world object '%s' to link '%s'", object.object.id.c_str(),
                           object.link_name.c_str());
+          std::cout << "Getting pose of attached object " << object.object.id << " from world." << std::endl;
+          std::cout << "object pose_:" << obj_in_world->pose_.matrix() << std::endl;
+          std::cout << "robot_state_->getGlobalLinkTransform(link_model).inverse(): "
+                    << robot_state_->getGlobalLinkTransform(link_model).inverse().matrix() << std::endl;
           link_frame_to_object_pose_transform =
               robot_state_->getGlobalLinkTransform(link_model).inverse() * obj_in_world->pose_;
+          std::cout << "DEBUG link_frame_to_object_pose_transform:" << std::endl;
+          std::cout << link_frame_to_object_pose_transform.matrix() << std::endl;
+
           shapes = obj_in_world->shapes_;
           shape_poses = obj_in_world->shape_poses_;
           subframe_poses = obj_in_world->subframe_poses_;
+          ROS_WARN_STREAM("DEBUG object_id " << object.object.id << ", shape_poses_[0]:");
+          std::cout << shape_poses[0].matrix() << std::endl;
         }
         else
         {
@@ -1522,6 +1574,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       if (!object.object.type.db.empty() || !object.object.type.key.empty())
         setObjectType(object.object.id, object.object.type);
 
+      ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 7");
       // STEP 2: Remove the object from the world (if it existed)
       if (obj_in_world && world_->removeObject(object.object.id))
       {
@@ -1535,23 +1588,29 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
                          object.object.id.c_str());
       }
 
+      ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 8");
+
       // STEP 3: Attach the object to the robot
       if (object.object.operation == moveit_msgs::CollisionObject::ADD ||
           !robot_state_->hasAttachedBody(object.object.id))
       {
+        ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 9");
         if (robot_state_->clearAttachedBody(object.object.id))
           ROS_DEBUG_NAMED(LOGNAME,
                           "The robot state already had an object named '%s' attached to link '%s'. "
                           "The object was replaced.",
                           object.object.id.c_str(), object.link_name.c_str());
 
+        ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 10");
         robot_state_->attachBody(object.object.id, link_frame_to_object_pose_transform, shapes, shape_poses,
                                  object.touch_links, object.link_name, object.detach_posture, subframe_poses);
+        ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg ADD 11");
         ROS_DEBUG_NAMED(LOGNAME, "Attached object '%s' to link '%s'", object.object.id.c_str(),
                         object.link_name.c_str());
       }
       else  // APPEND: augment to existing attached object
       {
+        ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg APPEND 1");
         const moveit::core::AttachedBody* ab = robot_state_->getAttachedBody(object.object.id);
 
         bool pose_msg_is_populated = (object.object.pose.position.x == 0 && object.object.pose.position.y == 0 &&
@@ -1576,6 +1635,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
                                  touch_links, object.link_name, detach_posture, subframe_poses);
         ROS_DEBUG_NAMED(LOGNAME, "Appended things to object '%s' attached to link '%s'", object.object.id.c_str(),
                         object.link_name.c_str());
+        ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg APPEND Fin");
       }
       return true;
     }
@@ -1584,6 +1644,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
   }
   else if (object.object.operation == moveit_msgs::CollisionObject::REMOVE)  // == DETACH
   {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg REMOVE 1");
     // STEP 1: Get info about the object from the RobotState
     std::vector<const moveit::core::AttachedBody*> attached_bodies;
     if (object.object.id.empty())
@@ -1612,6 +1673,8 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       }
     }
 
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg REMOVE 2");
+
     // STEP 2+3: Remove the attached object(s) from the RobotState and put them in the world
     for (const moveit::core::AttachedBody* attached_body : attached_bodies)
     {
@@ -1637,6 +1700,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
     }
     if (!attached_bodies.empty() || object.object.id.empty())
       return true;
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg REMOVE 3");
   }
   else if (object.object.operation == moveit_msgs::CollisionObject::MOVE)
   {
@@ -1647,11 +1711,13 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
     ROS_ERROR_NAMED(LOGNAME, "Unknown collision object operation: %d", object.object.operation);
   }
 
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processAttachedCollisionObjectMsg Fin");
   return false;
 }
 
 bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject& object)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processCollisionObjectMsg 1");
   if (object.id == OCTOMAP_NS)
   {
     ROS_ERROR_NAMED(LOGNAME, "The ID '%s' cannot be used for collision objects (name reserved)", OCTOMAP_NS.c_str());
@@ -1660,14 +1726,17 @@ bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject
 
   if (object.operation == moveit_msgs::CollisionObject::ADD || object.operation == moveit_msgs::CollisionObject::APPEND)
   {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processCollisionObjectMsg A");
     return processCollisionObjectAdd(object);
   }
   else if (object.operation == moveit_msgs::CollisionObject::REMOVE)
   {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processCollisionObjectMsg B");
     return processCollisionObjectRemove(object);
   }
   else if (object.operation == moveit_msgs::CollisionObject::MOVE)
   {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processCollisionObjectMsg C");
     return processCollisionObjectMove(object);
   }
 
@@ -1785,11 +1854,13 @@ bool PlanningScene::processCollisionObjectAdd(const moveit_msgs::CollisionObject
     subframes[name] = subframe_pose;
   }
   world_->setSubframesOfObject(object.id, subframes);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processCollisionObjectAdd Fin");
   return true;
 }
 
 bool PlanningScene::processCollisionObjectRemove(const moveit_msgs::CollisionObject& object)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processCollisionObjectRemove 1");
   if (object.id.empty())
   {
     removeAllCollisionObjects();
@@ -1800,6 +1871,7 @@ bool PlanningScene::processCollisionObjectRemove(const moveit_msgs::CollisionObj
     removeObjectColor(object.id);
     removeObjectType(object.id);
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE processCollisionObjectRemove Fin");
   return true;
 }
 

@@ -267,11 +267,18 @@ bool World::moveObject(const std::string& object_id, const Eigen::Isometry3d& tr
   ensureUnique(it->second);
   ASSERT_ISOMETRY(transform)  // unsanitized input, could contain a non-isometry
   const Eigen::Isometry3d new_pose = transform * it->second->pose_;
+  ROS_WARN_STREAM("Moving object " << object_id << ". Old pose: ");
+  ROS_WARN_STREAM(it->second->pose_.matrix());
   setObjectPose(object_id, new_pose);
+  ROS_WARN_STREAM("New pose: ");
+  ROS_WARN_STREAM(transform.matrix());
 
   // Update global shape poses
   for (unsigned int i = 0; i < it->second->global_shape_poses_.size(); ++i)
+  {
     it->second->global_shape_poses_[i] = it->second->pose_ * it->second->shape_poses_[i];
+  }
+
   notify(it->second, MOVE_SHAPE);
   return true;
 }

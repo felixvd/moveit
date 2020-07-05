@@ -117,6 +117,7 @@ void PlanningSceneRender::renderPlanningScene(const planning_scene::PlanningScen
       render_shapes_->renderShape(planning_scene_geometry_node_, object->shapes_[j].get(),
                                   scene->getWorld()->getGlobalShapeTransform(id, j), octree_voxel_rendering,
                                   octree_color_mode, color, alpha);
+      std::cout << "DEBUG_render FIN" << std::endl;
     }
   }
 }

@@ -80,6 +80,8 @@ void RenderShapes::renderShape(Ogre::SceneNode* node, const shapes::Shape* s, co
                                OctreeVoxelRenderMode octree_voxel_rendering, OctreeVoxelColorMode octree_color_mode,
                                const rviz::Color& color, float alpha)
 {
+  std::cout << "DEBUG renderShape 1" << std::endl;
+  std::cout << "pose:" << p.matrix() << std::endl;
   rviz::Shape* ogre_shape = nullptr;
   Eigen::Vector3d translation = p.translation();
   Ogre::Vector3 position(translation.x(), translation.y(), translation.z());
@@ -177,7 +179,7 @@ void RenderShapes::renderShape(Ogre::SceneNode* node, const shapes::Shape* s, co
   if (ogre_shape)
   {
     ogre_shape->setColor(color.r_, color.g_, color.b_, alpha);
-
+    std::cout << "DEBUG renderShape 2" << std::endl;
     if (s->type == shapes::CYLINDER)
     {
       // in geometric shapes, the z axis of the cylinder is its height;
@@ -186,11 +188,13 @@ void RenderShapes::renderShape(Ogre::SceneNode* node, const shapes::Shape* s, co
                                   Ogre::Vector3(1.0, 0.0, 0.0));
       orientation = orientation * fix;
     }
+    std::cout << "DEBUG renderShape 3" << std::endl;
 
     ogre_shape->setPosition(position);
     ogre_shape->setOrientation(orientation);
     scene_shapes_.emplace_back(ogre_shape);
   }
+  std::cout << "DEBUG renderShape Fin" << std::endl;
 }
 
 void RenderShapes::updateShapeColors(float r, float g, float b, float a)
