@@ -753,10 +753,10 @@ MotionPlanningFrame::createObjectMarkerMsg(const collision_detection::CollisionE
   Eigen::Vector3d center;
   double scale;
   shapes::computeShapeBoundingSphere(obj->shapes_[0].get(), center, scale);
-  geometry_msgs::PoseStamped shape_pose = tf2::toMsg(tf2::Stamped<Eigen::Isometry3d>(
-      obj->pose_, ros::Time(), planning_display_->getRobotModel()->getModelFrame()));
+  geometry_msgs::PoseStamped shape_pose = tf2::toMsg(
+      tf2::Stamped<Eigen::Isometry3d>(obj->pose_, ros::Time(), planning_display_->getRobotModel()->getModelFrame()));
   // TODO(felixvd): Consider where to place the object marker.
-  //                obj->pose*obj->shape_poses_[0] is backwards compatible, sits on the visible part of 
+  //                obj->pose*obj->shape_poses_[0] is backwards compatible, sits on the visible part of
   //                the object, and is more difficult to implement now.
   //                obj->pose is easier to implement and make more sense.
   scale = (scale + center.cwiseAbs().maxCoeff()) * 2.0 * 1.2;  // add padding of 20% size
@@ -854,8 +854,8 @@ void MotionPlanningFrame::renameCollisionObject(QListWidgetItem* item)
     {
       known_collision_objects_[item->type()].first = item_text;
       moveit::core::AttachedBody* new_ab = new moveit::core::AttachedBody(
-          ab->getAttachedLink(), known_collision_objects_[item->type()].first, ab->getShapes(),
-          ab->getFixedTransforms(), ab->getTouchLinks(), ab->getDetachPosture(), ab->getSubframes());
+          ab->getAttachedLink(), known_collision_objects_[item->type()].first, ab->getPose(), ab->getShapes(),
+          ab->getShapePoses(), ab->getTouchLinks(), ab->getDetachPosture(), ab->getSubframes());
       cs.clearAttachedBody(ab->getName());
       cs.attachBody(new_ab);
     }
