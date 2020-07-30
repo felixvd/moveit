@@ -91,6 +91,13 @@ AttachedBody::AttachedBody(const LinkModel* parent_link_model, const std::string
     shape_poses_in_link_frame_.push_back(pose_ * shape_poses_[i]);
   }
 
+  // subframe_poses_in_link_frame_.clear();
+  // subframe_poses_in_link_frame_.reserve(subframe_poses_.size());
+  // for (size_t i = 0; i < subframe_poses_.size(); ++i)
+  // {
+  //   subframe_poses_in_link_frame_.push_back(std::pair<std::string, Eigen::Isometry3d>(subframe_poses_[i].first, pose_
+  //   * subframe_poses_[i].second));
+  // }
 }
 
 AttachedBody::~AttachedBody() = default;
@@ -161,6 +168,25 @@ const Eigen::Isometry3d& AttachedBody::getSubframeTransform(const std::string& f
     *found = false;
   return IDENTITY_TRANSFORM;
 }
+
+// const Eigen::Isometry3d& AttachedBody::getSubframeTransformInLinkFrame(const std::string& frame_name, bool* found)
+// const
+// {
+//   if (boost::starts_with(frame_name, id_) && frame_name[id_.length()] == '/')
+//   {
+//     auto it = subframe_poses_in_link_frame_.find(frame_name.substr(id_.length() + 1));
+//     if (it != subframe_poses_in_link_frame_.end())
+//     {
+//       if (found)
+//         *found = true;
+//       return it->second;
+//     }
+//   }
+//   static const Eigen::Isometry3d IDENTITY_TRANSFORM = Eigen::Isometry3d::Identity();
+//   if (found)
+//     *found = false;
+//   return IDENTITY_TRANSFORM;
+// }
 
 const Eigen::Isometry3d& AttachedBody::getGlobalSubframeTransform(const std::string& frame_name, bool* found) const
 {

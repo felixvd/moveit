@@ -1678,11 +1678,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
     // STEP 2+3: Remove the attached object(s) from the RobotState and put them in the world
     for (const moveit::core::AttachedBody* attached_body : attached_bodies)
     {
-      const std::vector<shapes::ShapeConstPtr>& shapes = attached_body->getShapes();
-      const EigenSTL::vector_Isometry3d& shape_poses = attached_body->getShapePoses();
       const std::string& name = attached_body->getName();
-      const Eigen::Isometry3d pose = attached_body->getGlobalPose();
-
       if (world_->hasObject(name))
         ROS_WARN_NAMED(LOGNAME,
                        "The collision world already has an object with the same name as the body about to be detached. "
@@ -1690,8 +1686,8 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
                        object.object.id.c_str());
       else
       {
-        world_->addToObject(name, pose, shapes, shape_poses);
-        world_->setSubframesOfObject(name, attached_body->getSubframeTransforms());
+        world_->addToObject(name, attached_body->getGlobalPose(), attached_body->getShapes(), attached_body->getShapePoses());
+        world_->setSubframesOfObject(name, attached_body->getSubframes());
         ROS_DEBUG_NAMED(LOGNAME, "Detached object '%s' from link '%s' and added it back in the collision world",
                         name.c_str(), object.link_name.c_str());
       }

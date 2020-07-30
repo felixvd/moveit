@@ -244,6 +244,9 @@ private:
   /** \brief Transforms to subframes on the object, relative to the object's pose. */
   moveit::core::FixedTransformsMap subframe_poses_;
 
+  // /** \brief Transforms to subframes on the object, relative to the link frame. */
+  // moveit::core::FixedTransformsMap subframe_poses_in_link_frame_;
+
   /** \brief Transforms to subframes on the object, relative to the model frame. */
   moveit::core::FixedTransformsMap global_subframe_poses_;
 };
