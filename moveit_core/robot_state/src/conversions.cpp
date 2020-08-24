@@ -227,6 +227,9 @@ static void _attachedBodyToMsg(const AttachedBody& attached_body, moveit_msgs::A
     pose = tf2::toMsg(frame_pair.second);
     aco.object.subframe_poses.push_back(pose);
   }
+  std::cout << "Converting attachedBodyToMsg: " << aco.object.id << std::endl;
+  std::cout << "pose msg:" << aco.object.pose << std::endl;
+  std::cout << "shape_pose[0] msg:" << std::endl << aco.object.primitive_poses[0] << std::endl;
 }
 
 static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::AttachedCollisionObject& aco, RobotState& state)
@@ -316,6 +319,7 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
         // Transform shape poses and subframes to link frame
         if (!Transforms::sameFrame(aco.object.header.frame_id, aco.link_name))
         {
+          ROS_WARN_STREAM("The aco.object.header.frame_id: " << aco.object.header.frame_id << " is not equal to aco.link_name: " << aco.link_name);
           bool frame_found = false;
           Eigen::Isometry3d world_to_header_frame;
           world_to_header_frame = state.getFrameTransform(aco.object.header.frame_id, &frame_found);
@@ -334,6 +338,8 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
           Eigen::Isometry3d t = world_to_header_frame.inverse() * state.getGlobalLinkTransform(lm);
           object_pose = object_pose * t;
         }
+        else
+          ROS_WARN_STREAM("The aco.object.header.frame_id: " << aco.object.header.frame_id << " = aco.link_name: " << aco.link_name);
 
         if (shapes.empty())
           ROS_ERROR_NAMED(LOGNAME, "There is no geometry to attach to link '%s' as part of attached body '%s'",

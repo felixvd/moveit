@@ -653,6 +653,7 @@ moveit::core::Transforms& PlanningScene::getTransformsNonConst()
 
 void PlanningScene::getPlanningSceneDiffMsg(moveit_msgs::PlanningScene& scene_msg) const
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getPlanningSceneDiffMsg 1");
   scene_msg.name = name_;
   scene_msg.robot_model_name = getRobotModel()->getName();
   scene_msg.is_diff = true;
@@ -717,6 +718,7 @@ void PlanningScene::getPlanningSceneDiffMsg(moveit_msgs::PlanningScene& scene_ms
     if (do_omap)
       getOctomapMsg(scene_msg.world.octomap);
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getPlanningSceneDiffMsg Fin");
 }
 
 namespace
@@ -761,7 +763,7 @@ bool PlanningScene::getCollisionObjectMsg(moveit_msgs::CollisionObject& collisio
 {
   collision_detection::CollisionEnv::ObjectConstPtr obj = world_->getObject(ns);
   collision_obj.header.frame_id = getPlanningFrame();
-  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getCollisionObjectMsg obj->pose_:");
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getCollisionObjectMsg world obj->pose_:");
   std::cout << obj->pose_.matrix() << std::endl;
   collision_obj.pose = tf2::toMsg(obj->pose_);
   collision_obj.id = ns;
@@ -798,6 +800,7 @@ bool PlanningScene::getCollisionObjectMsg(moveit_msgs::CollisionObject& collisio
 
 void PlanningScene::getCollisionObjectMsgs(std::vector<moveit_msgs::CollisionObject>& collision_objs) const
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getCollisionObjectMsgs 1");
   collision_objs.clear();
   const std::vector<std::string>& ids = world_->getObjectIds();
   for (const std::string& id : ids)
@@ -806,6 +809,7 @@ void PlanningScene::getCollisionObjectMsgs(std::vector<moveit_msgs::CollisionObj
       collision_objs.emplace_back();
       getCollisionObjectMsg(collision_objs.back(), id);
     }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getCollisionObjectMsgs Fin");
 }
 
 bool PlanningScene::getAttachedCollisionObjectMsg(moveit_msgs::AttachedCollisionObject& attached_collision_obj,
@@ -871,6 +875,7 @@ void PlanningScene::getObjectColorMsgs(std::vector<moveit_msgs::ObjectColor>& ob
 
 void PlanningScene::getPlanningSceneMsg(moveit_msgs::PlanningScene& scene_msg) const
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getPlanningSceneMsg 1");
   scene_msg.name = name_;
   scene_msg.is_diff = false;
   scene_msg.robot_model_name = getRobotModel()->getName();
@@ -888,11 +893,13 @@ void PlanningScene::getPlanningSceneMsg(moveit_msgs::PlanningScene& scene_msg) c
 
   // get the octomap
   getOctomapMsg(scene_msg.world.octomap);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getPlanningSceneMsg Fin");
 }
 
 void PlanningScene::getPlanningSceneMsg(moveit_msgs::PlanningScene& scene_msg,
                                         const moveit_msgs::PlanningSceneComponents& comp) const
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getPlanningSceneMsg (comps) 1");
   scene_msg.is_diff = false;
   if (comp.components & moveit_msgs::PlanningSceneComponents::SCENE_SETTINGS)
   {
@@ -954,6 +961,8 @@ void PlanningScene::getPlanningSceneMsg(moveit_msgs::PlanningScene& scene_msg,
   // get the octomap
   if (comp.components & moveit_msgs::PlanningSceneComponents::OCTOMAP)
     getOctomapMsg(scene_msg.world.octomap);
+  
+  ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE getPlanningSceneMsg (comps) Fin");
 }
 
 void PlanningScene::saveGeometryToStream(std::ostream& out) const
@@ -1298,12 +1307,12 @@ bool PlanningScene::usePlanningSceneMsg(const moveit_msgs::PlanningScene& scene_
   ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE usePlanningSceneMsg 1");
   if (scene_msg.is_diff)
   {
-    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE usePlanningSceneMsg 2");
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE usePlanningSceneMsg 2 A");
     return setPlanningSceneDiffMsg(scene_msg);
   }
   else
   {
-    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE usePlanningSceneMsg 3");
+    ROS_INFO_NAMED(LOGNAME, "DEBUG SCENE usePlanningSceneMsg 2 B");
     return setPlanningSceneMsg(scene_msg);
   }
 }
@@ -1490,8 +1499,8 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           ROS_DEBUG_NAMED(LOGNAME, "Attaching world object '%s' to link '%s'", object.object.id.c_str(),
                           object.link_name.c_str());
           std::cout << "Getting pose of attached object " << object.object.id << " from world." << std::endl;
-          std::cout << "object pose_:" << obj_in_world->pose_.matrix() << std::endl;
-          std::cout << "robot_state_->getGlobalLinkTransform(link_model).inverse(): "
+          std::cout << "object pose_:" << std::endl << obj_in_world->pose_.matrix() << std::endl;
+          std::cout << "robot_state_->getGlobalLinkTransform(link_model).inverse(): " << std::endl
                     << robot_state_->getGlobalLinkTransform(link_model).inverse().matrix() << std::endl;
           link_frame_to_object_pose_transform =
               robot_state_->getGlobalLinkTransform(link_model).inverse() * obj_in_world->pose_;
@@ -1516,6 +1525,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       else  // If object is not in the world, use the message contents
       {
         Eigen::Isometry3d pose;
+        ROS_INFO_STREAM("DEBUG attached_obj_pose before transform: " << object.object.pose);
         PlanningScene::poseMsgToEigen(object.object.pose, pose);
         // TODO(felixvd): Use _msgToAttachedBody from robot_state/conversions.cpp here?
         // TODO(felixvd): yes. Even make a helper function for the other branch (getAttachedBodyFromWorld)
@@ -1795,7 +1805,7 @@ bool PlanningScene::processCollisionObjectAdd(const moveit_msgs::CollisionObject
   // replace the object if ADD is specified instead of APPEND
   if (object.operation == moveit_msgs::CollisionObject::ADD && world_->hasObject(object.id))
     world_->removeObject(object.id);
-
+  ROS_WARN_STREAM("Processing collision object " << object.id);
   const Eigen::Isometry3d& world_to_object_header_transform = getFrameTransform(object.header.frame_id);
   Eigen::Isometry3d header_to_pose_transform;
   PlanningScene::poseMsgToEigen(object.pose, header_to_pose_transform);

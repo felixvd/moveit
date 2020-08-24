@@ -58,21 +58,21 @@ AttachedBody::AttachedBody(const LinkModel* parent_link_model, const std::string
   , subframe_poses_(subframe_poses)
   , global_subframe_poses_(subframe_poses)
 {
-  std::cout << "Asserting isometry of pose for AttBody " << id << std::endl;
+  // std::cout << "Asserting isometry of pose for AttBody " << id << std::endl;
   ASSERT_ISOMETRY(pose)  // unsanitized input, could contain a non-isometry
-  std::cout << "Done1 asserting" << std::endl;
+  // std::cout << "Done1 asserting" << std::endl;
 
   for (const auto& t : shape_poses_)
   {
-    std::cout << "Asserting isometry of shape poses for AttBody " << id << std::endl;
+    // std::cout << "Asserting isometry of shape poses for AttBody " << id << std::endl;
     ASSERT_ISOMETRY(t)  // unsanitized input, could contain a non-isometry
-    std::cout << "Done2 asserting" << std::endl;
+    // std::cout << "Done2 asserting" << std::endl;
   }
   for (const auto& t : subframe_poses_)
   {
-    std::cout << "Asserting isometry of subframe poses for AttBody " << id << std::endl;
+    // std::cout << "Asserting isometry of subframe poses for AttBody " << id << std::endl;
     ASSERT_ISOMETRY(t.second)  // unsanitized input, could contain a non-isometry
-    std::cout << "Done3 asserting" << std::endl;
+    // std::cout << "Done3 asserting" << std::endl;
   }
 
   // TODO(felixvd): These are initialized as identity because the parent link transform is not 

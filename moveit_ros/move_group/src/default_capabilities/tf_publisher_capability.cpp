@@ -75,7 +75,7 @@ void TfPublisher::publishPlanningSceneFrames()
 {
   tf2_ros::TransformBroadcaster broadcaster;
   geometry_msgs::TransformStamped transform;
-  ros::Rate rate(rate_);
+  ros::Rate rate(.25);
 
   while (keep_running_)
   {
@@ -92,6 +92,9 @@ void TfPublisher::publishPlanningSceneFrames()
         transform.child_frame_id = object_frame;
         transform.header.stamp = stamp;
         transform.header.frame_id = planning_frame;
+        ROS_INFO_STREAM("DEBUG TfPub publishing transform for child_frame_id "  << transform.child_frame_id);
+        ROS_INFO_STREAM("DEBUG TfPub with header.frame_id "  << transform.header.frame_id);
+        ROS_INFO_STREAM("DEBUG TfPub transform xyz: "  << transform.transform.translation.x << ", " << transform.transform.translation.y << ", " << transform.transform.translation.z);
         broadcaster.sendTransform(transform);
 
         const moveit::core::FixedTransformsMap& subframes = obj.second->subframe_poses_;
@@ -108,6 +111,9 @@ void TfPublisher::publishPlanningSceneFrames()
         transform.child_frame_id = object_frame;
         transform.header.stamp = stamp;
         transform.header.frame_id = attached_body->getAttachedLinkName();
+        ROS_INFO_STREAM("DEBUG TfPub publishing attached child object_frame "  << transform.child_frame_id);
+        ROS_INFO_STREAM("DEBUG TfPub with header.frame_id "  << transform.header.frame_id);
+        ROS_INFO_STREAM("DEBUG TfPub transform xyz: "  << transform.transform.translation.x << ", " << transform.transform.translation.y << ", " << transform.transform.translation.z);
         broadcaster.sendTransform(transform);
 
         // TODO (felixvd): Confirm that this is right

@@ -369,7 +369,9 @@ void PlanningSceneMonitor::scenePublishingThread()
             occupancy_map_monitor::OccMapTree::ReadLock lock;
             if (octomap_monitor_)
               lock = octomap_monitor_->getOcTreePtr()->reading();
+            ROS_WARN_NAMED(LOGNAME, "PSM scenePublishingThread calling getPlanningSceneDiffMsg");
             scene_->getPlanningSceneDiffMsg(msg);
+            ROS_WARN_NAMED(LOGNAME, "PSM scenePublishingThread called getPlanningSceneDiffMsg");
             if (new_scene_update_ == UPDATE_STATE)
             {
               msg.robot_state.attached_collision_objects.clear();
@@ -460,13 +462,16 @@ bool PlanningSceneMonitor::updatesScene(const planning_scene::PlanningSceneConst
 
 void PlanningSceneMonitor::triggerSceneUpdateEvent(SceneUpdateType update_type)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM triggerSceneUpdateEvent");
   // do not modify update functions while we are calling them
   boost::recursive_mutex::scoped_lock lock(update_lock_);
 
   for (boost::function<void(SceneUpdateType)>& update_callback : update_callbacks_)
     update_callback(update_type);
   new_scene_update_ = (SceneUpdateType)((int)new_scene_update_ | (int)update_type);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM triggerSceneUpdateEvent B");
   new_scene_update_condition_.notify_all();
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM triggerSceneUpdateEvent Fin");
 }
 
 bool PlanningSceneMonitor::requestPlanningSceneState(const std::string& service_name)
@@ -531,7 +536,9 @@ bool PlanningSceneMonitor::getPlanningSceneServiceCallback(moveit_msgs::GetPlann
 
 void PlanningSceneMonitor::newPlanningSceneCallback(const moveit_msgs::PlanningSceneConstPtr& scene)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newPlanningSceneCallback 1");
   newPlanningSceneMessage(*scene);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newPlanningSceneCallback Fin");
 }
 
 void PlanningSceneMonitor::clearOctomap()
@@ -650,15 +657,16 @@ bool PlanningSceneMonitor::newPlanningSceneMessage(const moveit_msgs::PlanningSc
   }
   ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B 2");
   triggerSceneUpdateEvent(upd);
-  ROS_INFO_NAMED(LOGNAME, "Printing scene message that is returned:");
-  std::cout << scene.robot_state << std::endl;
-  std::cout << scene.world << std::endl;
+  ROS_DEBUG_NAMED(LOGNAME, "Printing scene message that is returned:");
+  ROS_DEBUG_STREAM(scene.robot_state);
+  ROS_DEBUG_STREAM(scene.world);
   ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newMessage B Fin");
   return result;
 }
 
 void PlanningSceneMonitor::newPlanningSceneWorldCallback(const moveit_msgs::PlanningSceneWorldConstPtr& world)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newPlanningSceneWorldCallback");
   if (scene_)
   {
     updateFrameTransforms();
@@ -679,10 +687,12 @@ void PlanningSceneMonitor::newPlanningSceneWorldCallback(const moveit_msgs::Plan
     }
     triggerSceneUpdateEvent(UPDATE_SCENE);
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM newPlanningSceneWorldCallback Fin");
 }
 
 void PlanningSceneMonitor::collisionObjectCallback(const moveit_msgs::CollisionObjectConstPtr& obj)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM collisionObjectCallback");
   if (!scene_)
     return;
 
@@ -693,11 +703,14 @@ void PlanningSceneMonitor::collisionObjectCallback(const moveit_msgs::CollisionO
     if (!scene_->processCollisionObjectMsg(*obj))
       return;
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM collisionObjectCallback B");
   triggerSceneUpdateEvent(UPDATE_GEOMETRY);
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM collisionObjectCallback Fin");
 }
 
 void PlanningSceneMonitor::attachObjectCallback(const moveit_msgs::AttachedCollisionObjectConstPtr& obj)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM attachObjectCallback");
   if (scene_)
   {
     updateFrameTransforms();
@@ -706,8 +719,10 @@ void PlanningSceneMonitor::attachObjectCallback(const moveit_msgs::AttachedColli
       last_update_time_ = ros::Time::now();
       scene_->processAttachedCollisionObjectMsg(*obj);
     }
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PSM attachObjectCallback B");
     triggerSceneUpdateEvent(UPDATE_GEOMETRY);
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PSM attachObjectCallback Fin");
 }
 
 void PlanningSceneMonitor::excludeRobotLinksFromOctree()
@@ -871,7 +886,7 @@ void PlanningSceneMonitor::excludeWorldObjectFromOctree(const collision_detectio
     if (h)
     {
       // TODO (felixvd): What does this do?
-      std::cout << "DEBUG excludeWorldObjectFromOctree: " << obj->global_shape_poses_[i].matrix() << std::endl;
+      // std::cout << "DEBUG excludeWorldObjectFromOctree: " << obj->global_shape_poses_[i].matrix() << std::endl;
       collision_body_shape_handles_[obj->id_].push_back(std::make_pair(h, &obj->global_shape_poses_[i]));
       found = true;
     }
