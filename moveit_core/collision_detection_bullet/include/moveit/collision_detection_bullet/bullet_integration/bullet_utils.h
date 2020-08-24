@@ -148,6 +148,7 @@ public:
   /** \brief Standard constructor
    *
    *  \param shape_poses Assumes all poses are in a single global frame */
+  // TODO (felixvd): Make sure these poses are in the global frame
   CollisionObjectWrapper(const std::string& name, const collision_detection::BodyType& type_id,
                          const std::vector<shapes::ShapeConstPtr>& shapes,
                          const AlignedVector<Eigen::Isometry3d>& shape_poses,
