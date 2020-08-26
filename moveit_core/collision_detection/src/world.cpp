@@ -94,6 +94,7 @@ void World::addToObject(const std::string& object_id, const Eigen::Isometry3d& p
   for (std::size_t i = 0; i < shapes.size(); ++i)
     addToObjectInternal(obj, shapes[i], shape_poses[i]);
 
+  updateGlobalPoses_(obj, true, false);
   notify(obj, Action(action));
 }
 
@@ -118,6 +119,7 @@ void World::addToObject(const std::string& object_id, const Eigen::Isometry3d& p
 
   ensureUnique(obj);
   addToObjectInternal(obj, shape, shape_pose);
+  updateGlobalPoses_(obj, true, false);
 
   notify(obj, Action(action));
 }
@@ -170,7 +172,8 @@ bool World::knowsTransform(const std::string& name) const
       if (boost::starts_with(name, object.first) && name[object.first.length()] == '/')
         return object.second->subframe_poses_.find(name.substr(object.first.length() + 1)) !=
                object.second->subframe_poses_.end();
-    }
+        return object.second->global_subframe_poses_.find(name.substr(object.first.length() + 1)) !=
+               object.second->global_subframe_poses_.end();
   }
   return false;
 }
@@ -201,10 +204,10 @@ const Eigen::Isometry3d& World::getTransform(const std::string& name, bool& fram
       // if "object name/" matches start of object_id, we found the matching object
       if (boost::starts_with(name, object.first) && name[object.first.length()] == '/')
       {
-        auto it = object.second->subframe_poses_.find(name.substr(object.first.length() + 1));
-        if (it != object.second->subframe_poses_.end())
+        auto it = object.second->global_subframe_poses_.find(name.substr(object.first.length() + 1));
+        if (it != object.second->global_subframe_poses_.end())
         {
-          return object.second->pose_ * it->second;  // Transforms to global frame
+          return it->second;
         }
       }
     }
@@ -273,11 +276,7 @@ bool World::moveObject(const std::string& object_id, const Eigen::Isometry3d& tr
   ROS_WARN_STREAM("New pose: ");
   ROS_WARN_STREAM(transform.matrix());
 
-  // Update global shape poses
-  for (unsigned int i = 0; i < it->second->global_shape_poses_.size(); ++i)
-  {
-    it->second->global_shape_poses_[i] = it->second->pose_ * it->second->shape_poses_[i];
-  }
+  updateGlobalPoses_(it->second);
 
   notify(it->second, MOVE_SHAPE);
   return true;
@@ -292,13 +291,8 @@ bool World::moveObjectAbsolute(const std::string& object_id, const Eigen::Isomet
     return true;  // object already at correct location
   ensureUnique(it->second);
   ASSERT_ISOMETRY(transform)  // unsanitized input, could contain a non-isometry
-  setObjectPose(object_id, transform);
-
-  // Update global shape poses
-  for (unsigned int i = 0; i < it->second->global_shape_poses_.size(); ++i)
-  {
-    it->second->global_shape_poses_[i] = it->second->pose_ * it->second->shape_poses_[i];
-  }
+  setObjectPose(object_id, transform);  // TODO(felixvd): This can be optimized to use it->second
+  updateGlobalPoses_(it->second);
   
   notify(it->second, MOVE_SHAPE);
   return true;
@@ -363,7 +357,8 @@ bool World::setSubframesOfObject(const std::string& object_id, const moveit::cor
     ASSERT_ISOMETRY(t.second)  // unsanitized input, could contain a non-isometry
   }
   obj_pair->second->subframe_poses_ = subframe_poses;
-  // TODO(felixvd): Do the global transforms have to be updated here?
+
+  updateGlobalPoses_(obj_pair->second, false, true);
   return true;
 }
 
@@ -379,8 +374,26 @@ bool World::setObjectPose(const std::string& object_id, const Eigen::Isometry3d&
   }
   ensureUnique(obj);
   obj->pose_ = pose;
+  updateGlobalPoses_(obj);
   notify(obj, Action(action));
   return true;
+}
+
+void World::updateGlobalPoses_(ObjectPtr& obj, bool update_shape_poses, bool update_subframe_poses)
+{
+  // Update global shape poses
+  if (update_shape_poses)
+    for (unsigned int i = 0; i < obj->global_shape_poses_.size(); ++i)
+      obj->global_shape_poses_[i] = obj->pose_ * obj->shape_poses_[i];
+
+  // Update global subframe poses
+  if (update_subframe_poses)
+  {
+    obj->global_subframe_poses_ = obj->subframe_poses_; // TODO (felixvd): Inefficient copy, but iterating through two maps is complicated to write for this prototype
+    for (auto& pose_pair : obj->global_subframe_poses_)
+      pose_pair.second = obj->pose_ * pose_pair.second;
+  }
+}
 }
 
 World::ObserverHandle World::addObserver(const ObserverCallbackFn& callback)

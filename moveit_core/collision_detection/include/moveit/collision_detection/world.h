@@ -111,6 +111,10 @@ public:
      *  (e.g. screwdriver/tip, kettle/spout, mug/base).
      */
     moveit::core::FixedTransformsMap subframe_poses_;
+
+    /** \brief Transforms from the world frame to the object subframes.
+     */
+    moveit::core::FixedTransformsMap global_subframe_poses_;
   };
 
   /** \brief Get the list of Object ids */
@@ -234,6 +238,9 @@ public:
 
   /** \brief Set the pose of an object. The pose is specified in the world frame. */
   bool setObjectPose(const std::string& object_id, const Eigen::Isometry3d& pose);
+
+  /** \brief Updates the global shape and subframe poses. Used internally.*/
+  void updateGlobalPoses_(ObjectPtr& obj, bool update_shape_poses = true, bool update_subframe_poses = true);
 
   /** \brief Clear all objects.
    * If there are no other pointers to corresponding instances of Objects,
