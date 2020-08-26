@@ -153,6 +153,7 @@ void MotionPlanningFrame::clearScene()
 
 void MotionPlanningFrame::sceneScaleChanged(int value)
 {
+  const double scaling_factor = (double)value / 100.0;
   if (scaled_object_)
   {
     planning_scene_monitor::LockedPlanningSceneRW ps = planning_display_->getPlanningSceneRW();
@@ -160,19 +161,24 @@ void MotionPlanningFrame::sceneScaleChanged(int value)
     {
       if (ps->getWorld()->hasObject(scaled_object_->id_))
       {
-        const moveit::core::FixedTransformsMap subframes = scaled_object_->subframe_poses_;  // Keep subframes
         ps->getWorldNonConst()->removeObject(scaled_object_->id_);
         for (std::size_t i = 0; i < scaled_object_->shapes_.size(); ++i)
         {
           shapes::Shape* s = scaled_object_->shapes_[i]->clone();
-          s->scale((double)value / 100.0);
-          ps->getWorldNonConst()->addToObject(scaled_object_->id_, shapes::ShapeConstPtr(s),
-                                              scaled_object_->shape_poses_[i]);
+          s->scale(scaling_factor);
+
+          Eigen::Isometry3d scaled_shape_pose = scaled_object_->shape_poses_[i];
+          scaled_shape_pose.translation() *= scaling_factor;
+
+          ps->getWorldNonConst()->addToObject(scaled_object_->id_, scaled_object_->pose_, shapes::ShapeConstPtr(s),
+                                              scaled_shape_pose);
         }
-        // TODO(felixvd): Scale subframes too
-        ps->getWorldNonConst()->setSubframesOfObject(scaled_object_->id_, subframes);
+        moveit::core::FixedTransformsMap scaled_subframes = scaled_object_->subframe_poses_;
+        for (auto& subframe_pair : scaled_subframes)
+          subframe_pair.second.translation() *= scaling_factor;
+
+        ps->getWorldNonConst()->setSubframesOfObject(scaled_object_->id_, scaled_subframes);
         setLocalSceneEdited();
-        std::cout << "DEBUG_planning_frame_plugin1" << std::endl;
         scene_marker_->processMessage(createObjectMarkerMsg(ps->getWorld()->getObject(scaled_object_->id_)));
         planning_display_->queueRenderSceneGeometry();
       }
@@ -195,6 +201,8 @@ void MotionPlanningFrame::sceneScaleStartChange()
     if (ps)
     {
       scaled_object_ = ps->getWorld()->getObject(sel[0]->text().toStdString());
+      scaled_object_subframes_ = scaled_object_->subframe_poses_;
+      scaled_object_shape_poses_ = scaled_object_->shape_poses_;
     }
   }
 }
