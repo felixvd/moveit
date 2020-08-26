@@ -533,11 +533,14 @@ bool constructConstraints(XmlRpc::XmlRpcValue& params, moveit_msgs::Constraints&
 bool kinematic_constraints::resolveConstraintFrames(const moveit::core::RobotState& state,
                                                     moveit_msgs::Constraints& constraints)
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG UTILS resolveConstraintFrames 1");
   for (auto& c : constraints.position_constraints)
   {
+    ROS_INFO_STREAM_NAMED(LOGNAME, "c.position_constraint = " << std::endl << c);
     bool frame_found;
     const moveit::core::LinkModel* robot_link;
     const Eigen::Isometry3d& transform = state.getFrameInfo(c.link_name, robot_link, frame_found);
+    ROS_INFO_STREAM_NAMED(LOGNAME, "transform for c.link_name = " << c.link_name << std::endl << transform.matrix());
     if (!frame_found)
       return false;
 
@@ -552,10 +555,12 @@ bool kinematic_constraints::resolveConstraintFrames(const moveit::core::RobotSta
       c.link_name = robot_link->getName();
       tf::vectorEigenToMsg(offset_robot_link, c.target_point_offset);
     }
+    ROS_INFO_STREAM_NAMED(LOGNAME, "AFTERWARDS, c.position_constraint = " << std::endl << c);
   }
-
+  
   for (auto& c : constraints.orientation_constraints)
   {
+    ROS_INFO_STREAM_NAMED(LOGNAME, "c.orientation_constraint = " << std::endl << c);
     bool frame_found;
     const moveit::core::LinkModel* robot_link;
     // getFrameInfo() returns a valid isometry by contract
@@ -574,6 +579,8 @@ bool kinematic_constraints::resolveConstraintFrames(const moveit::core::RobotSta
       tf::quaternionMsgToEigen(c.orientation, quat_target);
       tf::quaternionEigenToMsg(quat_target * link_name_to_robot_link, c.orientation);
     }
+    ROS_INFO_STREAM_NAMED(LOGNAME, "AFTERWARDS, c.orientation_constraint = " << std::endl << c);
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG UTILS resolveConstraintFrames Fin");
   return true;
 }

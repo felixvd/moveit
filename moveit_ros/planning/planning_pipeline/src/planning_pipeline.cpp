@@ -222,13 +222,17 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
     ROS_ERROR("No planning plugin loaded. Cannot plan.");
     return false;
   }
+  ROS_INFO_STREAM("DEBUG PlanningPipeline 1");
 
   bool solved = false;
   try
   {
     if (adapter_chain_)
     {
+      ROS_INFO_STREAM("DEBUG PlanningPileine 1A, planning request: " << std::endl << req);
       solved = adapter_chain_->adaptAndPlan(planner_instance_, planning_scene, req, res, adapter_added_state_index);
+      ROS_INFO_STREAM("DEBUG PlanningPileine 1A done planning");
+      
       if (!adapter_added_state_index.empty())
       {
         std::stringstream ss;
@@ -239,6 +243,7 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
     }
     else
     {
+      ROS_INFO_STREAM("DEBUG PlanningPileine 1B, planning request: " << std::endl << req);
       planning_interface::PlanningContextPtr context =
           planner_instance_->getPlanningContext(planning_scene, req, res.error_code_);
       solved = context ? context->solve(res) : false;
@@ -250,7 +255,8 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
     return false;
   }
   bool valid = true;
-
+  ROS_INFO_STREAM("DEBUG PlanningPipeline 2; solved = " << (solved ? "true":"false"));
+  
   if (solved && res.trajectory_)
   {
     std::size_t state_count = res.trajectory_->getWayPointCount();
@@ -359,7 +365,7 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
                "unusual. Are you using a move_group_interface and forgetting to call clearPoseTargets() or "
                "equivalent?");
   }
-
+  ROS_INFO_STREAM("DEBUG PlanningPipeline FIN; solved = " << (solved ? "true":"false"));
   return solved && valid;
 }
 

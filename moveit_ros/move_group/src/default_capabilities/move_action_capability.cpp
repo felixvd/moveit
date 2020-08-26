@@ -165,6 +165,17 @@ void MoveGroupMoveAction::executeMoveCallbackPlanOnly(const moveit_msgs::MoveGro
 {
   ROS_INFO_NAMED(getName(), "Planning request received for MoveGroup action. Forwarding to planning pipeline.");
 
+  // ROS_INFO_STREAM("DEBUG MGMovAct executeMoveCallbackPlanOnly 1 world has objects: ");
+  // std::vector<std::string> v = context_->planning_scene_monitor_->getPlanningScene()->getWorldNonConst()->getObjectIds();
+  // for (auto s : v)
+  //   ROS_INFO_STREAM(s);
+  // ROS_INFO_STREAM("DEBUG MGMovAct executeMoveCallbackPlanOnly 1 getFrameTransform(box/bottom) : ");
+  // ROS_INFO_STREAM(context_->planning_scene_monitor_->getPlanningScene()->getFrameTransform("box/bottom").matrix());
+  // context_->planning_scene_monitor_->getPlanningScene()->getWorldNonConst()->updateGlobalPoses_("box");
+  // ROS_INFO_STREAM("DEBUG MGMovAct executeMoveCallbackPlanOnly 2 getFrameTransform(box/bottom) : ");
+  // ROS_INFO_STREAM(context_->planning_scene_monitor_->getPlanningScene()->getFrameTransform("box/bottom").matrix());
+
+  ROS_INFO_STREAM("DEBUG MGMovAct executeMoveCallbackPlanOnly 1");
   // lock the scene so that it does not modify the world representation while diff() is called
   planning_scene_monitor::LockedPlanningSceneRO lscene(context_->planning_scene_monitor_);
   const planning_scene::PlanningSceneConstPtr& the_scene =
@@ -173,6 +184,7 @@ void MoveGroupMoveAction::executeMoveCallbackPlanOnly(const moveit_msgs::MoveGro
           lscene->diff(goal->planning_options.planning_scene_diff);
   planning_interface::MotionPlanResponse res;
 
+  ROS_INFO_STREAM("DEBUG MGMovAct executeMoveCallbackPlanOnly 2");
   if (preempt_requested_)
   {
     ROS_INFO_NAMED(getName(), "Preempt requested before the goal is planned.");
@@ -182,7 +194,9 @@ void MoveGroupMoveAction::executeMoveCallbackPlanOnly(const moveit_msgs::MoveGro
 
   try
   {
+    ROS_INFO_STREAM("DEBUG MGMovAct executeMoveCallbackPlanOnly 3");
     context_->planning_pipeline_->generatePlan(the_scene, goal->request, res);
+    ROS_INFO_STREAM("DEBUG MGMovAct executeMoveCallbackPlanOnly 4");
   }
   catch (std::exception& ex)
   {
@@ -190,6 +204,7 @@ void MoveGroupMoveAction::executeMoveCallbackPlanOnly(const moveit_msgs::MoveGro
     res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
   }
 
+  ROS_INFO_STREAM("DEBUG MGMovAct executeMoveCallbackPlanOnly Fin");
   convertToMsg(res.trajectory_, action_res.trajectory_start, action_res.planned_trajectory);
   action_res.error_code = res.error_code_;
   action_res.planning_time = res.planning_time_;

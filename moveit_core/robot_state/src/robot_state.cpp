@@ -1048,9 +1048,11 @@ const Eigen::Isometry3d& RobotState::getFrameTransform(const std::string& frame_
 const Eigen::Isometry3d& RobotState::getFrameInfo(const std::string& frame_id, const LinkModel*& robot_link,
                                                   bool& frame_found) const
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG ROBOTSTATE getFrameInfo 1");
+  ROS_INFO_STREAM_NAMED(LOGNAME, "frame_id = " << frame_id);
   if (!frame_id.empty() && frame_id[0] == '/')
     return getFrameInfo(frame_id.substr(1), robot_link, frame_found);
-
+  ROS_INFO_NAMED(LOGNAME, "DEBUG ROBOTSTATE getFrameInfo 2");
   static const Eigen::Isometry3d IDENTITY_TRANSFORM = Eigen::Isometry3d::Identity();
   if (frame_id == robot_model_->getModelFrame())
   {
@@ -1058,14 +1060,17 @@ const Eigen::Isometry3d& RobotState::getFrameInfo(const std::string& frame_id, c
     frame_found = true;
     return IDENTITY_TRANSFORM;
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG ROBOTSTATE getFrameInfo 3");
   if ((robot_link = robot_model_->getLinkModel(frame_id, &frame_found)))
   {
     BOOST_VERIFY(checkLinkTransforms());
     return global_link_transforms_[robot_link->getLinkIndex()];
   }
   robot_link = nullptr;
+  ROS_INFO_NAMED(LOGNAME, "DEBUG ROBOTSTATE getFrameInfo 4");
 
   // Check names of the attached bodies
+  ROS_INFO_STREAM_NAMED(LOGNAME, "attached_body_map_ = " << attached_body_map_.size());
   std::map<std::string, AttachedBody*>::const_iterator jt = attached_body_map_.find(frame_id);
   if (jt != attached_body_map_.end())
   {
@@ -1075,11 +1080,14 @@ const Eigen::Isometry3d& RobotState::getFrameInfo(const std::string& frame_id, c
     BOOST_VERIFY(checkLinkTransforms());
     return transform;
   }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG ROBOTSTATE getFrameInfo 5");
 
   // Check if an AttachedBody has a subframe with name frame_id
   for (const std::pair<const std::string, AttachedBody*>& body : attached_body_map_)
   {
     const auto& transform = body.second->getGlobalSubframeTransform(frame_id, &frame_found);
+    ROS_INFO_NAMED(LOGNAME, "DEBUG ROBOTSTATE getFrameInfo 6");
+    // ROS_INFO_STREAM_NAMED(LOGNAME, "transform " << std::endl << transform.matrix());
     if (frame_found)
     {
       robot_link = body.second->getAttachedLink();
@@ -1090,6 +1098,7 @@ const Eigen::Isometry3d& RobotState::getFrameInfo(const std::string& frame_id, c
 
   robot_link = nullptr;
   frame_found = false;
+  ROS_INFO_NAMED(LOGNAME, "DEBUG ROBOTSTATE getFrameInfo Fin (did not find frame)");
   return IDENTITY_TRANSFORM;
 }
 

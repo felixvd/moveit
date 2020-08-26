@@ -160,21 +160,28 @@ bool World::hasObject(const std::string& object_id) const
 
 bool World::knowsTransform(const std::string& name) const
 {
+  ROS_INFO_STREAM("DEBUG W knowsTransform 1, name = " << name);
   // Check object names first
   std::map<std::string, ObjectPtr>::const_iterator it = objects_.find(name);
   if (it != objects_.end())
+  {
+    ROS_INFO_STREAM("DEBUG W knowsTransform Fin True 1");
     return true;
+  }
   else                                         // Then objects' subframes
   {
     for (const std::pair<const std::string, ObjectPtr>& object : objects_)
     {
       // if "object name/" matches start of object_id, we found the matching object
       if (boost::starts_with(name, object.first) && name[object.first.length()] == '/')
-        return object.second->subframe_poses_.find(name.substr(object.first.length() + 1)) !=
-               object.second->subframe_poses_.end();
+      {
+        ROS_INFO_STREAM("DEBUG W knowsTransform Fin True");
         return object.second->global_subframe_poses_.find(name.substr(object.first.length() + 1)) !=
                object.second->global_subframe_poses_.end();
+      }
+    }
   }
+  ROS_INFO_STREAM("DEBUG W knowsTransform Fin FALSE");
   return false;
 }
 
@@ -191,10 +198,13 @@ const Eigen::Isometry3d& World::getTransform(const std::string& name, bool& fram
 {
   // assume found
   frame_found = true;
+  ROS_INFO("DEBUG W getTransform 1");
+  ROS_INFO_STREAM("name = " << name);
 
   std::map<std::string, ObjectPtr>::const_iterator it = objects_.find(name);
   if (it != objects_.end())
   {
+    // ROS_INFO("DEBUG W getTransform Fin (found object)");
     return it->second->pose_;
   }
   else  // Search within subframes
@@ -204,9 +214,12 @@ const Eigen::Isometry3d& World::getTransform(const std::string& name, bool& fram
       // if "object name/" matches start of object_id, we found the matching object
       if (boost::starts_with(name, object.first) && name[object.first.length()] == '/')
       {
+        // ROS_INFO_STREAM("DEBUG W getTransform found subframe in object " << object.first);
+        // ROS_INFO_STREAM("DEBUG W getTransform checking for subframe " << name.substr(object.first.length() + 1));
         auto it = object.second->global_subframe_poses_.find(name.substr(object.first.length() + 1));
         if (it != object.second->global_subframe_poses_.end())
         {
+          // ROS_INFO_STREAM("DEBUG W getTransform Fin (found subframe " << it->first << " with global transform: " << std::endl << it->second.matrix());
           return it->second;
         }
       }
@@ -216,6 +229,7 @@ const Eigen::Isometry3d& World::getTransform(const std::string& name, bool& fram
   // we need a persisting isometry for the API
   static const Eigen::Isometry3d IDENTITY_TRANSFORM = Eigen::Isometry3d::Identity();
   frame_found = false;
+  ROS_INFO("DEBUG W getTransform Fin (found NONE)");
   return IDENTITY_TRANSFORM;
 }
 
@@ -364,6 +378,7 @@ bool World::setSubframesOfObject(const std::string& object_id, const moveit::cor
 
 bool World::setObjectPose(const std::string& object_id, const Eigen::Isometry3d& pose)
 {
+  ROS_INFO_STREAM("DEBUG setObjectPose 1");
   ASSERT_ISOMETRY(pose);  // unsanitized input, could contain a non-isometry
   ObjectPtr& obj = objects_[object_id];
   int action = 0;
@@ -376,6 +391,7 @@ bool World::setObjectPose(const std::string& object_id, const Eigen::Isometry3d&
   obj->pose_ = pose;
   updateGlobalPoses_(obj);
   notify(obj, Action(action));
+  ROS_INFO_STREAM("DEBUG setObjectPose Fin");
   return true;
 }
 
@@ -384,16 +400,34 @@ void World::updateGlobalPoses_(ObjectPtr& obj, bool update_shape_poses, bool upd
   // Update global shape poses
   if (update_shape_poses)
     for (unsigned int i = 0; i < obj->global_shape_poses_.size(); ++i)
+    {
       obj->global_shape_poses_[i] = obj->pose_ * obj->shape_poses_[i];
-
+    }
   // Update global subframe poses
+  ROS_WARN_STREAM("DEBUG updateGlobalPoses_ 1, object: " << obj->id_);
   if (update_subframe_poses)
   {
     obj->global_subframe_poses_ = obj->subframe_poses_; // TODO (felixvd): Inefficient copy, but iterating through two maps is complicated to write for this prototype
     for (auto& pose_pair : obj->global_subframe_poses_)
+    {
+      ROS_INFO_STREAM("DEBUG Updating global subframe pose " << pose_pair.first);
+      ROS_INFO_STREAM("DEBUG Before: " << std::endl << pose_pair.second.matrix());
       pose_pair.second = obj->pose_ * pose_pair.second;
+      ROS_INFO_STREAM("DEBUG After: " << std::endl << pose_pair.second.matrix());
+    }
   }
+  ROS_INFO_STREAM("DEBUG updateGlobalPoses_ Fin");
 }
+
+void World::updateGlobalPoses_(std::string object_id)
+{
+  // ROS_INFO_STREAM("DEBUG updateGlobalPoses_ with object_id " << object_id);
+  ROS_WARN_STREAM("DEBUG updateGlobalPoses_ updating ALL global poses ");
+  for (auto pair : objects_)
+  {
+    ROS_INFO_STREAM("DEBUG updateGlobalPoses_ entering updateGlobalPoses with object " << pair.first);
+    updateGlobalPoses_(pair.second);
+  }
 }
 
 World::ObserverHandle World::addObserver(const ObserverCallbackFn& callback)

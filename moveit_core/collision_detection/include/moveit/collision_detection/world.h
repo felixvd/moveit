@@ -242,6 +242,8 @@ public:
   /** \brief Updates the global shape and subframe poses. Used internally.*/
   void updateGlobalPoses_(ObjectPtr& obj, bool update_shape_poses = true, bool update_subframe_poses = true);
 
+  void updateGlobalPoses_(std::string object_id);
+
   /** \brief Clear all objects.
    * If there are no other pointers to corresponding instances of Objects,
    * the memory is freed. */

@@ -459,10 +459,11 @@ void ompl_interface::ModelBasedPlanningContext::setVerboseStateValidityChecks(bo
 ompl::base::GoalPtr ompl_interface::ModelBasedPlanningContext::constructGoal()
 {
   // ******************* set up the goal representation, based on goal constraints
-
+  ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG MBPC constructGoal 1");
   std::vector<ob::GoalPtr> goals;
   for (kinematic_constraints::KinematicConstraintSetPtr& goal_constraint : goal_constraints_)
   {
+    ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG MBPC making sampler from constraint: " << std::endl << goal_constraint);
     constraint_samplers::ConstraintSamplerPtr constraint_sampler;
     if (spec_.constraint_sampler_manager_)
       constraint_sampler = spec_.constraint_sampler_manager_->selectSampler(getPlanningScene(), getGroupName(),
@@ -473,12 +474,12 @@ ompl::base::GoalPtr ompl_interface::ModelBasedPlanningContext::constructGoal()
       goals.push_back(goal);
     }
   }
-
+  ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG MBPC constructGoal Fin");
   if (!goals.empty())
     return goals.size() == 1 ? goals[0] : ompl::base::GoalPtr(new GoalSampleableRegionMux(goals));
   else
     ROS_ERROR_NAMED(LOGNAME, "Unable to construct goal representation");
-
+  ROS_ERROR_STREAM_NAMED(LOGNAME, "DEBUG MBPC constructGoal Fin??!");
   return ob::GoalPtr();
 }
 
@@ -676,6 +677,7 @@ void ompl_interface::ModelBasedPlanningContext::postSolve()
 
 bool ompl_interface::ModelBasedPlanningContext::solve(planning_interface::MotionPlanResponse& res)
 {
+  ROS_INFO_STREAM("DEBUG MBPC solve(res) 1");
   if (solve(request_.allowed_planning_time, request_.num_planning_attempts))
   {
     double ptime = getLastPlanTime();
@@ -695,6 +697,7 @@ bool ompl_interface::ModelBasedPlanningContext::solve(planning_interface::Motion
     res.trajectory_.reset(new robot_trajectory::RobotTrajectory(getRobotModel(), getGroupName()));
     getSolutionPath(*res.trajectory_);
     res.planning_time_ = ptime;
+    ROS_INFO_STREAM("DEBUG MBPC solve(res) Fin Success");
     return true;
   }
   else
@@ -707,6 +710,7 @@ bool ompl_interface::ModelBasedPlanningContext::solve(planning_interface::Motion
 
 bool ompl_interface::ModelBasedPlanningContext::solve(planning_interface::MotionPlanDetailedResponse& res)
 {
+  ROS_INFO_STREAM("DEBUG MBPC solve(res) 1");
   if (solve(request_.allowed_planning_time, request_.num_planning_attempts))
   {
     res.trajectory_.reserve(3);
@@ -744,6 +748,7 @@ bool ompl_interface::ModelBasedPlanningContext::solve(planning_interface::Motion
     // fill the response
     ROS_DEBUG_NAMED(LOGNAME, "%s: Returning successful solution with %lu states", getName().c_str(),
                     getOMPLSimpleSetup()->getSolutionPath().getStateCount());
+    ROS_INFO_STREAM("DEBUG MBPC solve(res) Fin Success");
     return true;
   }
   else
@@ -756,9 +761,11 @@ bool ompl_interface::ModelBasedPlanningContext::solve(planning_interface::Motion
 
 bool ompl_interface::ModelBasedPlanningContext::solve(double timeout, unsigned int count)
 {
+  ROS_INFO_STREAM("DEBUG MBPC solve 1");
   moveit::tools::Profiler::ScopedBlock sblock("PlanningContext:Solve");
   ompl::time::point start = ompl::time::now();
   preSolve();
+  ROS_INFO_STREAM("DEBUG MBPC solve 2");
 
   bool result = false;
   if (count <= 1 || multi_query_planning_enabled_)  // multi-query planners should always run in single instances

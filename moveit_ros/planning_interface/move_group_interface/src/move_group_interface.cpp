@@ -757,6 +757,7 @@ public:
     }
 
     moveit_msgs::MoveGroupGoal goal;
+    ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG MoveGroupInterface plan 1");
     constructGoal(goal);
     goal.planning_options.plan_only = true;
     goal.planning_options.look_around = false;
@@ -764,20 +765,25 @@ public:
     goal.planning_options.planning_scene_diff.is_diff = true;
     goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
 
+    ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG MoveGroupInterface plan 2");
     move_action_client_->sendGoal(goal);
+    ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG MoveGroupInterface plan 3");
     if (!move_action_client_->waitForResult())
     {
       ROS_INFO_STREAM_NAMED(LOGNAME, "MoveGroup action returned early");
     }
+    ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG MoveGroupInterface plan 4");
     if (move_action_client_->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
     {
       plan.trajectory_ = move_action_client_->getResult()->planned_trajectory;
       plan.start_state_ = move_action_client_->getResult()->trajectory_start;
       plan.planning_time_ = move_action_client_->getResult()->planning_time;
+      ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG MoveGroupInterface plan Fin A");
       return MoveItErrorCode(move_action_client_->getResult()->error_code);
     }
     else
     {
+      ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG MoveGroupInterface plan Fin B");
       ROS_WARN_STREAM_NAMED(LOGNAME, "Fail: " << move_action_client_->getState().toString() << ": "
                                               << move_action_client_->getState().getText());
       return MoveItErrorCode(move_action_client_->getResult()->error_code);

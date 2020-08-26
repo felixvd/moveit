@@ -1920,18 +1920,28 @@ const Eigen::Isometry3d& PlanningScene::getFrameTransform(const std::string& fra
 const Eigen::Isometry3d& PlanningScene::getFrameTransform(const moveit::core::RobotState& state,
                                                           const std::string& frame_id) const
 {
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PS getFrameTransform 1");
   if (!frame_id.empty() && frame_id[0] == '/')
     // Recursively call itself without the slash in front of frame name
     return getFrameTransform(frame_id.substr(1));
-
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PS getFrameTransform 2");
   bool frame_found;
   const Eigen::Isometry3d& t1 = state.getFrameTransform(frame_id, &frame_found);
   if (frame_found)
+  {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PS getFrameTransform Fin (found in RobotState)");
     return t1;
-
+  }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PS getFrameTransform 3");
   const Eigen::Isometry3d& t2 = getWorld()->getTransform(frame_id, frame_found);
   if (frame_found)
+  {
+    ROS_INFO_NAMED(LOGNAME, "DEBUG PS getFrameTransform Fin (found in World)");
+    // ROS_INFO_STREAM_NAMED(LOGNAME, "DEBUG PS transform: " << std::endl << t2.matrix());
+    // ROS_INFO_NAMED(LOGNAME, "DEBUG PS getFrameTransform Fin 2");
     return t2;
+  }
+  ROS_INFO_NAMED(LOGNAME, "DEBUG PS getFrameTransform Fin (no Transform found)");
   return getTransforms().Transforms::getTransform(frame_id);
 }
 

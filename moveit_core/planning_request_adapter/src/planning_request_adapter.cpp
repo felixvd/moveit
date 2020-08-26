@@ -51,7 +51,13 @@ bool callPlannerInterfaceSolve(const planning_interface::PlannerManager* planner
 {
   planning_interface::PlanningContextPtr context = planner->getPlanningContext(planning_scene, req, res.error_code_);
   if (context)
+  {
+    ROS_INFO_STREAM("DEBUG AdapterChain callPlannerInterfaceSolve with req: " << std::endl << req);
+    ROS_INFO_STREAM("DEBUG AdapterChain callPlannerInterfaceSolve planning_scene.getFrameTransform(box/bottom) : " << std::endl << planning_scene->getFrameTransform("box/bottom").matrix());
+    // planning_scene->getWorldNonConst()->updateGlobalPoses_("box");
+    // ROS_INFO_STREAM("DEBUG AdapterChain callPlannerInterfaceSolve planning_scene.getFrameTransform(box/bottom) : " << std::endl << planning_scene->getFrameTransform("box/bottom").matrix());
     return context->solve(res);
+  }
   else
     return false;
 }
@@ -132,10 +138,12 @@ bool PlanningRequestAdapterChain::adaptAndPlan(const planning_interface::Planner
                                                planning_interface::MotionPlanResponse& res,
                                                std::vector<std::size_t>& added_path_index) const
 {
+  ROS_INFO_STREAM("DEBUG AdapterChain adaptAndPlan 1");
   // if there are no adapters, run the planner directly
   if (adapters_.empty())
   {
     added_path_index.clear();
+    ROS_INFO_STREAM("DEBUG AdapterChain adaptAndPlan Fin A ");
     return callPlannerInterfaceSolve(planner.get(), planning_scene, req, res);
   }
   else
@@ -162,6 +170,7 @@ bool PlanningRequestAdapterChain::adaptAndPlan(const planning_interface::Planner
         added_path_index.push_back(added_index);
       }
     std::sort(added_path_index.begin(), added_path_index.end());
+    ROS_INFO_STREAM("DEBUG AdapterChain adaptAndPlan FinB");
     return result;
   }
 }

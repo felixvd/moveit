@@ -59,6 +59,11 @@ bool MoveGroupPlanService::computePlanService(moveit_msgs::GetMotionPlan::Reques
     context_->planning_scene_monitor_->waitForCurrentRobotState(ros::Time::now());
   context_->planning_scene_monitor_->updateFrameTransforms();
 
+
+  ROS_INFO_STREAM("DEBUG MGPlanSrv computePlanService planning_scene.getFrameTransform(box/bottom) : " << std::endl << context_->planning_scene_monitor_->getPlanningScene()->getFrameTransform("box/bottom").matrix());
+  context_->planning_scene_monitor_->getPlanningScene()->getWorldNonConst()->updateGlobalPoses_("box");
+  ROS_INFO_STREAM("DEBUG MGPlanSrv computePlanService planning_scene.getFrameTransform(box/bottom) : " << std::endl << context_->planning_scene_monitor_->getPlanningScene()->getFrameTransform("box/bottom").matrix());
+
   planning_scene_monitor::LockedPlanningSceneRO ps(context_->planning_scene_monitor_);
   try
   {
