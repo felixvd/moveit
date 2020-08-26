@@ -95,6 +95,7 @@ PosedBodyPointDecompositionVectorPtr getCollisionObjectPointDecomposition(const 
     PosedBodyPointDecompositionPtr pbd(
         new PosedBodyPointDecomposition(getBodyDecompositionCacheEntry(obj.shapes_[i], resolution)));
     ret->addToVector(pbd);
+    // TODO(felixvd): How to update this to the global pose, now that it is defined as relative?
     ret->updatePose(ret->getSize() - 1, obj.shape_poses_[i]);
   }
   return ret;
