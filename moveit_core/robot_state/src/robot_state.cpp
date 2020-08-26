@@ -1085,7 +1085,7 @@ const Eigen::Isometry3d& RobotState::getFrameInfo(const std::string& frame_id, c
   // Check if an AttachedBody has a subframe with name frame_id
   for (const std::pair<const std::string, AttachedBody*>& body : attached_body_map_)
   {
-    const auto& transform = body.second->getGlobalSubframeTransform(frame_id, &frame_found);
+    const Eigen::Isometry3d& transform = body.second->getGlobalSubframeTransform(frame_id, &frame_found);
     ROS_INFO_NAMED(LOGNAME, "DEBUG ROBOTSTATE getFrameInfo 6");
     // ROS_INFO_STREAM_NAMED(LOGNAME, "transform " << std::endl << transform.matrix());
     if (frame_found)
