@@ -964,6 +964,7 @@ void PlanningScene::saveGeometryToStream(std::ostream& out) const
       collision_detection::CollisionEnv::ObjectConstPtr obj = world_->getObject(id);
       if (obj)
       {
+        // TODO(felixvd): Add object pose here and to loadGeometryFromStream?
         out << "* " << id << std::endl;
         out << obj->shapes_.size() << std::endl;
         for (std::size_t j = 0; j < obj->shapes_.size(); ++j)

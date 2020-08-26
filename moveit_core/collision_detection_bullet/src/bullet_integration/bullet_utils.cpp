@@ -299,6 +299,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name, const co
     shape->setMargin(BULLET_MARGIN);
     manage(shape);
     setCollisionShape(shape);
+    // TODO (felixvd): Confirm that this pose is in global frame
     setWorldTransform(convertEigenToBt(m_shape_poses[0]));
   }
   else
@@ -309,7 +310,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name, const co
     // margin on compound seems to have no effect when positive but has an effect when negative
     compound->setMargin(BULLET_MARGIN);
     setCollisionShape(compound);
-
+    // TODO (felixvd): Confirm that this pose is in global frame
     setWorldTransform(convertEigenToBt(m_shape_poses[0]));
     Eigen::Isometry3d inv_world = m_shape_poses[0].inverse();
 
