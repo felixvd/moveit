@@ -240,7 +240,7 @@ TEST_F(LoadPlanningModelsPr2, FullTest)
 
   trajectory_msgs::JointTrajectory empty_state;
   moveit::core::AttachedBody* attached_body = new moveit::core::AttachedBody(
-      robot_model->getLinkModel("r_gripper_palm_link"), "box", shapes, poses, touch_links, empty_state);
+      robot_model->getLinkModel("r_gripper_palm_link"), "box", poses[0], shapes, poses, touch_links, empty_state);
   ks.attachBody(attached_body);
 
   std::vector<const moveit::core::AttachedBody*> attached_bodies_1;
