@@ -242,7 +242,7 @@ public:
   bool setObjectPose(const std::string& object_id, const Eigen::Isometry3d& pose);
 
   /** \brief Updates the global shape and subframe poses. Used internally.*/
-  void updateGlobalPoses_(ObjectPtr& obj, bool update_shape_poses = true, bool update_subframe_poses = true);
+  void updateGlobalPosesInternal(ObjectPtr& obj, bool update_shape_poses = true, bool update_subframe_poses = true);
 
   /** \brief Clear all objects.
    * If there are no other pointers to corresponding instances of Objects,

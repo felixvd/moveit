@@ -94,7 +94,7 @@ void World::addToObject(const std::string& object_id, const Eigen::Isometry3d& p
   for (std::size_t i = 0; i < shapes.size(); ++i)
     addToObjectInternal(obj, shapes[i], shape_poses[i]);
 
-  updateGlobalPoses_(obj, true, false);
+  updateGlobalPosesInternal(obj, true, false);
   notify(obj, Action(action));
 }
 
@@ -119,7 +119,7 @@ void World::addToObject(const std::string& object_id, const Eigen::Isometry3d& p
 
   ensureUnique(obj);
   addToObjectInternal(obj, shape, shape_pose);
-  updateGlobalPoses_(obj, true, false);
+  updateGlobalPosesInternal(obj, true, false);
 
   notify(obj, Action(action));
 }
@@ -283,7 +283,7 @@ bool World::moveObject(const std::string& object_id, const Eigen::Isometry3d& tr
   const Eigen::Isometry3d new_pose = transform * it->second->pose_;
   setObjectPose(object_id, new_pose);
 
-  updateGlobalPoses_(it->second);
+  updateGlobalPosesInternal(it->second);
   notify(it->second, MOVE_SHAPE);
   return true;
 }
@@ -298,7 +298,7 @@ bool World::moveObjectAbsolute(const std::string& object_id, const Eigen::Isomet
   ensureUnique(it->second);
   ASSERT_ISOMETRY(transform)            // unsanitized input, could contain a non-isometry
   setObjectPose(object_id, transform);  // TODO(felixvd): This can be optimized to use it->second
-  updateGlobalPoses_(it->second);
+  updateGlobalPosesInternal(it->second);
 
   notify(it->second, MOVE_SHAPE);
   return true;
@@ -364,7 +364,7 @@ bool World::setSubframesOfObject(const std::string& object_id, const moveit::cor
   }
   obj_pair->second->subframe_poses_ = subframe_poses;
 
-  updateGlobalPoses_(obj_pair->second, false, true);
+  updateGlobalPosesInternal(obj_pair->second, false, true);
   return true;
 }
 
@@ -380,12 +380,12 @@ bool World::setObjectPose(const std::string& object_id, const Eigen::Isometry3d&
   }
   ensureUnique(obj);
   obj->pose_ = pose;
-  updateGlobalPoses_(obj);
+  updateGlobalPosesInternal(obj);
   notify(obj, Action(action));
   return true;
 }
 
-void World::updateGlobalPoses_(ObjectPtr& obj, bool update_shape_poses, bool update_subframe_poses)
+void World::updateGlobalPosesInternal(ObjectPtr& obj, bool update_shape_poses, bool update_subframe_poses)
 {
   // Update global shape poses
   if (update_shape_poses)
