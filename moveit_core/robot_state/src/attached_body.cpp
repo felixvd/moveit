@@ -76,12 +76,11 @@ AttachedBody::AttachedBody(const LinkModel* parent_link_model, const std::string
   for (Eigen::Isometry3d& global_collision_body_transform : global_collision_body_transforms_)
     global_collision_body_transform.setIdentity();
 
-  // TODO(felixvd): Consider if these poses are necessary
   shape_poses_in_link_frame_.clear();
   shape_poses_in_link_frame_.reserve(shape_poses_.size());
-  for (size_t i = 0; i < shape_poses_.size(); ++i)
+  for (const auto& shape_pose : shape_poses_)
   {
-    shape_poses_in_link_frame_.push_back(pose_ * shape_poses_[i]);
+    shape_poses_in_link_frame_.push_back(pose_ * shape_pose);
   }
 }
 

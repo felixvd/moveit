@@ -1468,13 +1468,8 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
         // TODO(felixvd): Use _msgToAttachedBody from robot_state/conversions.cpp here?
         // TODO(felixvd): yes. Even make a helper function for the other branch (getAttachedBodyFromWorld)
         const Eigen::Isometry3d world_to_header_frame = getFrameTransform(object.object.header.frame_id);
-        ROS_INFO_STREAM("DEBUG world_to_header_frame (" << object.object.header.frame_id
-                                                        << "):" << world_to_header_frame.matrix());
         Eigen::Isometry3d t = world_to_header_frame.inverse() * robot_state_->getGlobalLinkTransform(link_model);
         link_frame_to_object_pose_transform = pose * t;
-        ROS_INFO_STREAM("DEBUG link_frame_to_object_pose_transform afterwards: "
-                        << std::endl
-                        << link_frame_to_object_pose_transform.matrix());
 
         for (std::size_t i = 0; i < object.object.primitives.size(); ++i)
         {
@@ -1622,7 +1617,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       const std::vector<shapes::ShapeConstPtr>& shapes = attached_body->getShapes();
       const EigenSTL::vector_Isometry3d& shape_poses = attached_body->getShapePoses();
       const std::string& name = attached_body->getName();
-      const Eigen::Isometry3d pose = attached_body->getGlobalPose();
+      const Eigen::Isometry3d pose& = attached_body->getGlobalPose();
 
       if (world_->hasObject(name))
         ROS_WARN_NAMED(LOGNAME,
@@ -1738,11 +1733,6 @@ bool PlanningScene::processCollisionObjectAdd(const moveit_msgs::CollisionObject
   Eigen::Isometry3d header_to_pose_transform;
   PlanningScene::poseMsgToEigen(object.pose, header_to_pose_transform);
   const Eigen::Isometry3d object_frame_transform = world_to_object_header_transform * header_to_pose_transform;
-
-  ROS_WARN_STREAM("object.header.frame_id = " << object.header.frame_id);
-  ROS_WARN_STREAM("world_to_object_header_transform = " << world_to_object_header_transform.matrix());
-  ROS_WARN_STREAM("header_to_pose_transform = " << header_to_pose_transform.matrix());
-  ROS_WARN_STREAM("object_frame_transform = " << object_frame_transform.matrix());
 
   world_->setObjectPose(object.id, object_frame_transform);
 
