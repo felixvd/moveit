@@ -65,7 +65,9 @@ public:
   AttachedBody(const LinkModel* link, const std::string& id, const Eigen::Isometry3d& pose,
                const std::vector<shapes::ShapeConstPtr>& shapes, const EigenSTL::vector_Isometry3d& shape_poses,
                const std::set<std::string>& touch_links, const trajectory_msgs::JointTrajectory& attach_posture,
-               const moveit::core::FixedTransformsMap& subframe_poses = moveit::core::FixedTransformsMap());
+               const moveit::core::FixedTransformsMap& subframe_poses = moveit::core::FixedTransformsMap(),
+               const shapes::ShapeConstPtr& visual_geometry_mesh = nullptr,
+               const Eigen::Isometry3d& visual_geometry_pose = Eigen::Isometry3d::Identity());
 
   ~AttachedBody();
 
@@ -205,6 +207,19 @@ public:
   /** \brief Set the scale for the shapes of this attached object */
   void setScale(double scale);
 
+  /** \brief Get the visual geometry of this attached object (only used for display) */
+  const shapes::ShapeConstPtr& getVisualGeometry() const
+  {
+    return visual_geometry_mesh_;
+  }
+
+  /** \brief Get the visual geometry's pose (relative to the object pose) */
+  const Eigen::Isometry3d& getVisualGeometryPose() const
+  {
+    return visual_geometry_pose_;
+  }
+
+
   /** \brief Recompute global_collision_body_transform given the transform of the parent link */
   void computeTransform(const Eigen::Isometry3d& parent_link_global_transform);
 
@@ -220,6 +235,13 @@ private:
 
   /** \brief The transform from the model frame to the attached body's pose  */
   Eigen::Isometry3d global_pose_;
+
+  /** \brief (Optional) The mesh used for the visual representation of this object. 
+   * Only used for display in Rviz, not for collision checking. */
+  shapes::ShapeConstPtr visual_geometry_mesh_;
+
+  /** \brief The pose of the visual geometry (mesh). */
+  Eigen::Isometry3d visual_geometry_pose_;
 
   /** \brief The geometries of the attached body */
   std::vector<shapes::ShapeConstPtr> shapes_;

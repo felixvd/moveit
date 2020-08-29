@@ -87,6 +87,7 @@ PlanningSceneDisplay::PlanningSceneDisplay(bool listen_to_planning_scene, bool s
   // Planning scene category -------------------------------------------------------------------------------------------
   scene_category_ = new rviz::Property("Scene Geometry", QVariant(), "", this);
 
+  // TODO(felixvd): Add the setVisualVisible etc. options here like for the robot visual.
   scene_name_property_ = new rviz::StringProperty("Scene Name", "(noname)", "Shows the name of the planning scene",
                                                   scene_category_, SLOT(changedSceneName()), this);
   scene_name_property_->setShouldBeSaved(false);
@@ -196,6 +197,9 @@ void PlanningSceneDisplay::onInitialize()
     planning_scene_robot_->setVisible(true);
     planning_scene_robot_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
     planning_scene_robot_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
+    planning_scene_render_->setVisible(true);
+    planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
+    planning_scene_render_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
     changedRobotSceneAlpha();
     changedAttachedBodyColor();
   }
@@ -215,6 +219,9 @@ void PlanningSceneDisplay::reset()
     planning_scene_robot_->setVisible(true);
     planning_scene_robot_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
     planning_scene_robot_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
+    planning_scene_render_->setVisible(true);
+    planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
+    planning_scene_render_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
   }
 }
 
@@ -410,6 +417,8 @@ void PlanningSceneDisplay::changedSceneRobotVisualEnabled()
   {
     planning_scene_robot_->setVisible(true);
     planning_scene_robot_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
+    planning_scene_render_->setVisible(true);
+    planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
     planning_scene_needs_render_ = true;
   }
 }
@@ -420,6 +429,8 @@ void PlanningSceneDisplay::changedSceneRobotCollisionEnabled()
   {
     planning_scene_robot_->setVisible(true);
     planning_scene_robot_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
+    planning_scene_render_->setVisible(true);
+    planning_scene_render_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
     planning_scene_needs_render_ = true;
   }
 }

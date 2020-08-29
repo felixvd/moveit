@@ -383,6 +383,24 @@ bool World::setObjectPose(const std::string& object_id, const Eigen::Isometry3d&
   return true;
 }
 
+bool World::setObjectVisualGeometry(const std::string& object_id, const shapes::ShapeConstPtr& mesh,
+                         const Eigen::Isometry3d& visual_geometry_pose)
+{
+  ASSERT_ISOMETRY(visual_geometry_pose);  // unsanitized input, could contain a non-isometry
+  ObjectPtr& obj = objects_[object_id];
+  int action = 0;
+  if (!obj)
+  {
+    obj.reset(new Object(object_id));
+    action |= CREATE;
+  }
+  ensureUnique(obj);
+  obj->visual_geometry_mesh_ = mesh;
+  obj->visual_geometry_pose_ = visual_geometry_pose;
+  notify(obj, Action(action));
+  return true;
+}
+
 void World::updateGlobalPosesInternal(ObjectPtr& obj, bool update_shape_poses, bool update_subframe_poses)
 {
   // Update global shape poses

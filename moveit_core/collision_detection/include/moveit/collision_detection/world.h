@@ -91,6 +91,13 @@ public:
      *  This frame is returned when getTransform() is called with the object's name. */
     Eigen::Isometry3d pose_;
 
+    /** \brief (Optional) The mesh used for the visual representation of this object. 
+     * Only used for display in Rviz, not for collision checking. */
+    shapes::ShapeConstPtr visual_geometry_mesh_;
+
+    /** \brief The pose of the visual geometry (mesh). */
+    Eigen::Isometry3d visual_geometry_pose_;
+
     /** \brief All the shapes making up this object.
      *
      * The pose of each Shape is stored in the corresponding element of the shape_poses_ array. */
@@ -240,6 +247,10 @@ public:
 
   /** \brief Set the pose of an object. The pose is specified in the world frame. */
   bool setObjectPose(const std::string& object_id, const Eigen::Isometry3d& pose);
+
+  /** \brief Set the visual geometry of an object. The pose is relative to the object pose. */
+  bool setObjectVisualGeometry(const std::string& object_id, const shapes::ShapeConstPtr& mesh,
+                         const Eigen::Isometry3d& visual_geometry_pose);
 
   /** \brief Clear all objects.
    * If there are no other pointers to corresponding instances of Objects,

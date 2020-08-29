@@ -138,10 +138,23 @@ void RobotStateVisualization::updateHelper(const moveit::core::RobotStateConstPt
     const EigenSTL::vector_Isometry3d& ab_t =
         attached_body->getShapePosesInLinkFrame();  // TODO(felixvd): Check if this can be done via getShapePoses()
     const std::vector<shapes::ShapeConstPtr>& ab_shapes = attached_body->getShapes();
+
+    bool force_draw_collision_shapes_as_visual = false;
+    if (attached_body->getVisualGeometry() != nullptr) // TODO(felixvd): Will this work?
+    {
+      render_shapes_->renderShape(link->getVisualNode(), attached_body->getVisualGeometry().get(), attached_body->getVisualGeometryPose(), octree_voxel_render_mode_,
+                                  octree_voxel_color_mode_, rcolor, alpha);
+    }
+    else // If no visual geometry defined
+      force_draw_collision_shapes_as_visual = true;
+    
     for (std::size_t j = 0; j < ab_shapes.size(); ++j)
     {
-      render_shapes_->renderShape(link->getVisualNode(), ab_shapes[j].get(), ab_t[j], octree_voxel_render_mode_,
-                                  octree_voxel_color_mode_, rcolor, alpha);
+      if (force_draw_collision_shapes_as_visual)
+      {
+        render_shapes_->renderShape(link->getVisualNode(), ab_shapes[j].get(), ab_t[j], octree_voxel_render_mode_,
+                                    octree_voxel_color_mode_, rcolor, alpha);
+      }
       render_shapes_->renderShape(link->getCollisionNode(), ab_shapes[j].get(), ab_t[j], octree_voxel_render_mode_,
                                   octree_voxel_color_mode_, rcolor, alpha);
     }

@@ -1431,6 +1431,8 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
     {
       // items to build the attached object from (filled from existing world object or message)
       Eigen::Isometry3d object_pose_in_link;
+      shapes::ShapeConstPtr visual_geometry_mesh;
+      Eigen::Isometry3d visual_geometry_pose;
       std::vector<shapes::ShapeConstPtr> shapes;
       EigenSTL::vector_Isometry3d shape_poses;
       moveit::core::FixedTransformsMap subframe_poses;
@@ -1451,6 +1453,8 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           shapes = obj_in_world->shapes_;
           shape_poses = obj_in_world->shape_poses_;
           subframe_poses = obj_in_world->subframe_poses_;
+          visual_geometry_mesh = obj_in_world->visual_geometry_mesh_;
+          visual_geometry_pose = obj_in_world->visual_geometry_pose_;
         }
         else
         {
@@ -1509,6 +1513,9 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           std::string name = object.object.subframe_names[i];
           subframe_poses[name] = subframe_pose;
         }
+
+        visual_geometry_mesh = shapes::ShapeConstPtr(shapes::constructShapeFromMsg(object.object.visual_geometry_mesh));
+        PlanningScene::poseMsgToEigen(object.object.visual_geometry_pose, visual_geometry_pose);
       }
 
       if (shapes.empty())
@@ -1545,7 +1552,8 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
                           object.object.id.c_str(), object.link_name.c_str());
 
         robot_state_->attachBody(object.object.id, object_pose_in_link, shapes, shape_poses,
-                                 object.touch_links, object.link_name, object.detach_posture, subframe_poses);
+                                 object.touch_links, object.link_name, object.detach_posture, subframe_poses,
+                                 visual_geometry_mesh, visual_geometry_pose);
         ROS_DEBUG_NAMED(LOGNAME, "Attached object '%s' to link '%s'", object.object.id.c_str(),
                         object.link_name.c_str());
       }
@@ -1569,10 +1577,23 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
         std::set<std::string> touch_links = ab->getTouchLinks();
         touch_links.insert(std::make_move_iterator(object.touch_links.begin()),
                            std::make_move_iterator(object.touch_links.end()));
-
+        
+        if (!object.object.visual_geometry_mesh.triangles.empty()) // If visual geometry is defined
+        {
+          
+          visual_geometry_mesh = shapes::ShapeConstPtr(shapes::constructShapeFromMsg(object.object.visual_geometry_mesh));
+          PlanningScene::poseMsgToEigen(object.object.visual_geometry_pose, visual_geometry_pose);
+        } 
+        else 
+        {
+          visual_geometry_mesh = nullptr;
+          visual_geometry_pose = Eigen::Isometry3d::Identity();
+        }
+        
         robot_state_->clearAttachedBody(object.object.id);
         robot_state_->attachBody(object.object.id, object_pose_in_link, shapes, shape_poses,
-                                 touch_links, object.link_name, detach_posture, subframe_poses);
+                                 touch_links, object.link_name, detach_posture, subframe_poses,
+                                 visual_geometry_mesh, visual_geometry_pose);
         ROS_DEBUG_NAMED(LOGNAME, "Appended things to object '%s' attached to link '%s'", object.object.id.c_str(),
                         object.link_name.c_str());
       }
@@ -1779,6 +1800,14 @@ bool PlanningScene::processCollisionObjectAdd(const moveit_msgs::CollisionObject
     subframes[name] = subframe_pose;
   }
   world_->setSubframesOfObject(object.id, subframes);
+
+  if (!object.visual_geometry_mesh.triangles.empty())
+  {
+    Eigen::Isometry3d visual_geometry_pose;
+    PlanningScene::poseMsgToEigen(object.visual_geometry_pose, visual_geometry_pose);
+    world_->setObjectVisualGeometry(object.id, shapes::ShapeConstPtr(shapes::constructShapeFromMsg(object.visual_geometry_mesh)), 
+                                    visual_geometry_pose);
+  }
   return true;
 }
 

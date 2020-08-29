@@ -71,6 +71,21 @@ void PlanningSceneRender::clear()
   render_shapes_->clear();
 }
 
+void PlanningSceneRender::setVisible(const bool& visible)
+{
+  visible_ = visible;
+}
+
+void PlanningSceneRender::setVisualVisible(const bool& visible)
+{
+  visual_visible_ = visible;
+}
+
+void PlanningSceneRender::setCollisionVisible(const bool& visible)
+{
+  collision_visible_ = visible;
+}
+
 void PlanningSceneRender::renderPlanningScene(const planning_scene::PlanningSceneConstPtr& scene,
                                               const rviz::Color& default_env_color,
                                               const rviz::Color& default_attached_color,
@@ -111,11 +126,30 @@ void PlanningSceneRender::renderPlanningScene(const planning_scene::PlanningScen
       color.b_ = c.b;
       alpha = c.a;
     }
-    for (std::size_t j = 0; j < object->shapes_.size(); ++j)
+
+    // TODO(felixvd): Should this use the Visual/Collision node like in the robot_state_visualization?
+    bool force_draw_collision_shapes = false;
+    if (visual_visible_)
     {
-      render_shapes_->renderShape(planning_scene_geometry_node_, object->shapes_[j].get(),
-                                  scene->getWorld()->getGlobalShapeTransform(id, j), octree_voxel_rendering,
+      if (object->visual_geometry_mesh_ != nullptr)
+      {
+        render_shapes_->renderShape(planning_scene_geometry_node_, object->visual_geometry_mesh_.get(),
+                                  object->pose_*object->visual_geometry_pose_, octree_voxel_rendering,
                                   octree_color_mode, color, alpha);
+      }
+      else // Draw collision shapes as visual if no visual geometry was defined
+        force_draw_collision_shapes = true;
+    }
+    
+    if (collision_visible_ || force_draw_collision_shapes)
+    {
+      // Draw collision shapes
+      for (std::size_t j = 0; j < object->shapes_.size(); ++j)
+      {
+        render_shapes_->renderShape(planning_scene_geometry_node_, object->shapes_[j].get(),
+                                    scene->getWorld()->getGlobalShapeTransform(id, j), octree_voxel_rendering,
+                                    octree_color_mode, color, alpha);
+      }
     }
   }
 }
