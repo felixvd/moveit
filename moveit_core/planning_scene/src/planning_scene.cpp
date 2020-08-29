@@ -1430,6 +1430,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
     if (link_model)
     {
       // items to build the attached object from (filled from existing world object or message)
+      Eigen::Isometry3d object_pose_in_link;
       std::vector<shapes::ShapeConstPtr> shapes;
       EigenSTL::vector_Isometry3d shape_poses;
       moveit::core::FixedTransformsMap subframe_poses;
@@ -1438,7 +1439,6 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       //         If it is in the world, message contents are ignored.
 
       collision_detection::CollisionEnv::ObjectConstPtr obj_in_world = world_->getObject(object.object.id);
-      Eigen::Isometry3d link_frame_to_object_pose_transform;
       if (object.object.operation == moveit_msgs::CollisionObject::ADD && object.object.primitives.empty() &&
           object.object.meshes.empty() && object.object.planes.empty())
       {
@@ -1446,7 +1446,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
         {
           ROS_DEBUG_NAMED(LOGNAME, "Attaching world object '%s' to link '%s'", object.object.id.c_str(),
                           object.link_name.c_str());
-          link_frame_to_object_pose_transform =
+          object_pose_in_link =
               robot_state_->getGlobalLinkTransform(link_model).inverse() * obj_in_world->pose_;
           shapes = obj_in_world->shapes_;
           shape_poses = obj_in_world->shape_poses_;
@@ -1469,7 +1469,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
         // TODO(felixvd): yes. Even make a helper function for the other branch (getAttachedBodyFromWorld)
         const Eigen::Isometry3d world_to_header_frame = getFrameTransform(object.object.header.frame_id);
         Eigen::Isometry3d t = world_to_header_frame.inverse() * robot_state_->getGlobalLinkTransform(link_model);
-        link_frame_to_object_pose_transform = pose * t;
+        object_pose_in_link = pose * t;
 
         for (std::size_t i = 0; i < object.object.primitives.size(); ++i)
         {
@@ -1544,7 +1544,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
                           "The object was replaced.",
                           object.object.id.c_str(), object.link_name.c_str());
 
-        robot_state_->attachBody(object.object.id, link_frame_to_object_pose_transform, shapes, shape_poses,
+        robot_state_->attachBody(object.object.id, object_pose_in_link, shapes, shape_poses,
                                  object.touch_links, object.link_name, object.detach_posture, subframe_poses);
         ROS_DEBUG_NAMED(LOGNAME, "Attached object '%s' to link '%s'", object.object.id.c_str(),
                         object.link_name.c_str());
@@ -1557,8 +1557,8 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
                                       object.object.pose.position.z == 0 && object.object.pose.orientation.x == 0 &&
                                       object.object.pose.orientation.y == 0 && object.object.pose.orientation.z == 0 &&
                                       object.object.pose.orientation.w == 0);
-        link_frame_to_object_pose_transform =
-            pose_msg_is_populated ? ab->getPose() : link_frame_to_object_pose_transform;
+        object_pose_in_link =
+            pose_msg_is_populated ? ab->getPose() : object_pose_in_link;
 
         shapes.insert(shapes.end(), ab->getShapes().begin(), ab->getShapes().end());
         shape_poses.insert(shape_poses.end(), ab->getShapePoses().begin(), ab->getShapePoses().end());
@@ -1571,7 +1571,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
                            std::make_move_iterator(object.touch_links.end()));
 
         robot_state_->clearAttachedBody(object.object.id);
-        robot_state_->attachBody(object.object.id, link_frame_to_object_pose_transform, shapes, shape_poses,
+        robot_state_->attachBody(object.object.id, object_pose_in_link, shapes, shape_poses,
                                  touch_links, object.link_name, detach_posture, subframe_poses);
         ROS_DEBUG_NAMED(LOGNAME, "Appended things to object '%s' attached to link '%s'", object.object.id.c_str(),
                         object.link_name.c_str());
