@@ -1617,7 +1617,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       const std::vector<shapes::ShapeConstPtr>& shapes = attached_body->getShapes();
       const EigenSTL::vector_Isometry3d& shape_poses = attached_body->getShapePoses();
       const std::string& name = attached_body->getName();
-      const Eigen::Isometry3d pose& = attached_body->getGlobalPose();
+      const Eigen::Isometry3d& pose = attached_body->getGlobalPose();
 
       if (world_->hasObject(name))
         ROS_WARN_NAMED(LOGNAME,
