@@ -787,11 +787,11 @@ void PlanningSceneMonitor::excludeAttachedBodyFromOctree(const moveit::core::Att
 
   boost::recursive_mutex::scoped_lock _(shape_handles_lock_);
   bool found = false;
-  for (std::size_t i = 0; i < attached_body->getShapes().size(); ++i)
+  for (const auto & i : attached_body->getShapes())
   {
     if (attached_body->getShapes()[i]->type == shapes::PLANE || attached_body->getShapes()[i]->type == shapes::OCTREE)
       continue;
-    occupancy_map_monitor::ShapeHandle h = octomap_monitor_->excludeShape(attached_body->getShapes()[i]);
+    occupancy_map_monitor::ShapeHandle h = octomap_monitor_->excludeShape(i);
     if (h)
     {
       found = true;
@@ -827,11 +827,11 @@ void PlanningSceneMonitor::excludeWorldObjectFromOctree(const collision_detectio
   boost::recursive_mutex::scoped_lock _(shape_handles_lock_);
 
   bool found = false;
-  for (std::size_t i = 0; i < obj->shapes_.size(); ++i)
+  for (const auto & shape : obj->shapes_)
   {
-    if (obj->shapes_[i]->type == shapes::PLANE || obj->shapes_[i]->type == shapes::OCTREE)
+    if (shape->type == shapes::PLANE || shape->type == shapes::OCTREE)
       continue;
-    occupancy_map_monitor::ShapeHandle h = octomap_monitor_->excludeShape(obj->shapes_[i]);
+    occupancy_map_monitor::ShapeHandle h = octomap_monitor_->excludeShape(shape);
     if (h)
     {
       // TODO (felixvd): Do these shape poses have to be in the world frame?

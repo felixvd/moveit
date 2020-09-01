@@ -433,7 +433,7 @@ void TrajectoryExecutionManager::continuousExecutionThread()
       {
         // get the controller handles needed to execute the new trajectory
         std::vector<moveit_controller_manager::MoveItControllerHandlePtr> handles(context->controllers_.size());
-        for (std::size_t i = 0; i < context->controllers_.size(); ++i)
+        for (auto & controller : context->controllers_)
         {
           moveit_controller_manager::MoveItControllerHandlePtr h;
           try
@@ -448,7 +448,7 @@ void TrajectoryExecutionManager::continuousExecutionThread()
           {
             last_execution_status_ = moveit_controller_manager::ExecutionStatus::ABORTED;
             ROS_ERROR_NAMED(name_, "No controller handle for controller '%s'. Aborting.",
-                            context->controllers_[i].c_str());
+                            controller.c_str());
             handles.clear();
             break;
           }
@@ -1339,7 +1339,7 @@ bool TrajectoryExecutionManager::executePart(std::size_t part_index)
         current_context_ = part_index;
         time_index_mutex_.unlock();
         active_handles_.resize(context.controllers_.size());
-        for (std::size_t i = 0; i < context.controllers_.size(); ++i)
+        for (auto & controller : context.controllers_)
         {
           moveit_controller_manager::MoveItControllerHandlePtr h;
           try
@@ -1356,7 +1356,7 @@ bool TrajectoryExecutionManager::executePart(std::size_t part_index)
             current_context_ = -1;
             last_execution_status_ = moveit_controller_manager::ExecutionStatus::ABORTED;
             ROS_ERROR_NAMED(name_, "No controller handle for controller '%s'. Aborting.",
-                            context.controllers_[i].c_str());
+                            controller.c_str());
             return false;
           }
           active_handles_[i] = h;
