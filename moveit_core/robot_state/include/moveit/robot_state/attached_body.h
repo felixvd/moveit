@@ -140,8 +140,7 @@ public:
   }
 
   /** \brief Get subframes of this object (relative to the object pose). The returned transforms are guaranteed to be
-   * valid
-   *  isometries. */
+   * valid isometries. */
   const moveit::core::FixedTransformsMap& getSubframes() const
   {
     return subframe_poses_;
