@@ -212,7 +212,7 @@ public:
 
   /** \brief Move the object pose (thus moving all shapes and subframes in the object)
    * according to the given transform specified in world frame.
-   * The transform is relative and does not replace the old pose.
+   * The transform is relative to and changes the object pose. It does not replace it.
    */
   bool moveObject(const std::string& object_id, const Eigen::Isometry3d& transform);
 
@@ -240,9 +240,6 @@ public:
 
   /** \brief Set the pose of an object. The pose is specified in the world frame. */
   bool setObjectPose(const std::string& object_id, const Eigen::Isometry3d& pose);
-
-  /** \brief Updates the global shape and subframe poses. Used internally.*/
-  void updateGlobalPosesInternal(ObjectPtr& obj, bool update_shape_poses = true, bool update_subframe_poses = true);
 
   /** \brief Clear all objects.
    * If there are no other pointers to corresponding instances of Objects,
@@ -329,6 +326,9 @@ private:
   /* Add a shape with no checking */
   virtual void addToObjectInternal(const ObjectPtr& obj, const shapes::ShapeConstPtr& shape,
                                    const Eigen::Isometry3d& shape_pose);
+
+  /** \brief Updates the global shape and subframe poses. */
+  void updateGlobalPosesInternal(ObjectPtr& obj, bool update_shape_poses = true, bool update_subframe_poses = true);
 
   /** The objects maintained in the world */
   std::map<std::string, ObjectPtr> objects_;

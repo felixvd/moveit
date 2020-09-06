@@ -766,7 +766,7 @@ MotionPlanningFrame::createObjectMarkerMsg(const collision_detection::CollisionE
   // TODO(felixvd): Consider where to place the object marker.
   //                obj->pose*obj->shape_poses_[0] is backwards compatible, sits on the visible part of
   //                the object, and is more difficult to implement now.
-  //                obj->pose is easier to implement and make more sense.
+  //                obj->pose is easier to implement and makes more sense.
   scale = (scale + center.cwiseAbs().maxCoeff()) * 2.0 * 1.2;  // add padding of 20% size
 
   // create an interactive marker msg for the given shape
@@ -840,12 +840,12 @@ void MotionPlanningFrame::renameCollisionObject(QListWidgetItem* item)
     if (obj)
     {
       known_collision_objects_[item->type()].first = item_text;
-      // const Eigen::Isometry3d pose = obj->id_;
+      const Eigen::Isometry3d pose = obj->pose_;
       const moveit::core::FixedTransformsMap subframes = obj->subframe_poses_;  // Keep subframes
-      // TODO(felixvd): Scale the subframes with the object
+
       ps->getWorldNonConst()->removeObject(obj->id_);
       ps->getWorldNonConst()->addToObject(known_collision_objects_[item->type()].first, obj->shapes_, obj->shape_poses_);
-      // TODO(felixvd): Keep the pose and subframes
+      ps->getWorldNonConst()->setObjectPose(obj->id_, pose);
       ps->getWorldNonConst()->setSubframesOfObject(obj->id_, subframes);
       if (scene_marker_)
       {

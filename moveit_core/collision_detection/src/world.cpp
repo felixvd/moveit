@@ -293,10 +293,8 @@ bool World::moveObjectAbsolute(const std::string& object_id, const Eigen::Isomet
   auto it = objects_.find(object_id);
   if (it == objects_.end())
     return false;
-  if (transform.isApprox(Eigen::Isometry3d::Identity()))
-    return true;  // object already at correct location
+  ASSERT_ISOMETRY(transform)  // unsanitized input, could contain a non-isometry
   ensureUnique(it->second);
-  ASSERT_ISOMETRY(transform)            // unsanitized input, could contain a non-isometry
   setObjectPose(object_id, transform);  // TODO(felixvd): This can be optimized to use it->second
   updateGlobalPosesInternal(it->second);
 
