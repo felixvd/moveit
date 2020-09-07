@@ -429,15 +429,15 @@ TYPED_TEST_P(CollisionDetectorTest, ConvertObjectToAttached)
   robot_state2.update();
 
   std::vector<std::string> touch_links;
-  Eigen::Isometry3d identity_transform{ Eigen::Isometry3d::Identity() };
-  robot_state1.attachBody("kinect", identity_transform, object->shapes_, object->shape_poses_, touch_links,
+  Eigen::Isometry3d IDENTITY_TRANSFORM{ Eigen::Isometry3d::Identity() };
+  robot_state1.attachBody("kinect", IDENTITY_TRANSFORM, object->shapes_, object->shape_poses_, touch_links,
                           "r_gripper_palm_link");
 
   EigenSTL::vector_Isometry3d other_poses;
   other_poses.push_back(pos2);
 
   // This creates a new set of constant properties for the attached body, which happens to be the same as the one above;
-  robot_state2.attachBody("kinect", identity_transform, object->shapes_, object->shape_poses_, touch_links,
+  robot_state2.attachBody("kinect", IDENTITY_TRANSFORM, object->shapes_, object->shape_poses_, touch_links,
                           "r_gripper_palm_link");
 
   // going to take a while, but that's fine
