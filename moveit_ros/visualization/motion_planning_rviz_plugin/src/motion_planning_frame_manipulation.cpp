@@ -89,9 +89,9 @@ void MotionPlanningFrame::processDetectedObjects()
       object_ids.clear();
       for (const auto& object : *world)
       {
-        if (!object.second->shape_poses_.empty())
+        if (!object.second->global_shape_poses_.empty())
         {
-          const auto& position = object.second->shape_poses_[0].translation();
+          const auto& position = object.second->global_shape_poses_[0].translation();
           if (position.x() >= min_x && position.x() <= max_x && position.y() >= min_y && position.y() <= max_y &&
               position.z() >= min_z && position.z() <= max_z)
           {
