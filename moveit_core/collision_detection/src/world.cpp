@@ -87,6 +87,8 @@ void World::addToObject(const std::string& object_id, const Eigen::Isometry3d& p
     obj.reset(new Object(object_id));
     action |= CREATE;
     obj->pose_ = pose;
+    obj->visual_geometry_mesh_url_ = "";
+    obj->visual_geometry_pose_ = Eigen::Isometry3d::Identity();
   }
 
   ensureUnique(obj);
@@ -115,6 +117,8 @@ void World::addToObject(const std::string& object_id, const Eigen::Isometry3d& p
     obj.reset(new Object(object_id));
     action |= CREATE;
     obj->pose_ = pose;
+    obj->visual_geometry_mesh_url_ = "";
+    obj->visual_geometry_pose_ = Eigen::Isometry3d::Identity();
   }
 
   ensureUnique(obj);
@@ -376,10 +380,30 @@ bool World::setObjectPose(const std::string& object_id, const Eigen::Isometry3d&
   {
     obj.reset(new Object(object_id));
     action |= CREATE;
+    obj->visual_geometry_mesh_url_ = "";
+    obj->visual_geometry_pose_ = Eigen::Isometry3d::Identity();
   }
   ensureUnique(obj);
   obj->pose_ = pose;
   updateGlobalPosesInternal(obj);
+  notify(obj, Action(action));
+  return true;
+}
+
+bool World::setObjectVisualGeometry(const std::string& object_id, const std::string& mesh_url,
+                         const Eigen::Isometry3d& visual_geometry_pose)
+{
+  ASSERT_ISOMETRY(visual_geometry_pose);  // unsanitized input, could contain a non-isometry
+  ObjectPtr& obj = objects_[object_id];
+  int action = 0;
+  if (!obj)
+  {
+    obj.reset(new Object(object_id));
+    action |= CREATE;
+  }
+  ensureUnique(obj);
+  obj->visual_geometry_mesh_url_ = mesh_url;
+  obj->visual_geometry_pose_ = visual_geometry_pose;
   notify(obj, Action(action));
   return true;
 }

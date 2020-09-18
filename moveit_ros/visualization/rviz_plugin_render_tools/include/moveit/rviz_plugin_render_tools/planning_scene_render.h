@@ -39,6 +39,7 @@
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/rviz_plugin_render_tools/render_shapes.h>
+#include <geometric_shapes/shape_operations.h>
 #include <rviz/helpers/color.h>
 #include <OgreMaterial.h>
 
@@ -77,6 +78,24 @@ public:
 
   void updateRobotPosition(const planning_scene::PlanningSceneConstPtr& scene);
 
+  /**
+   * \brief Set the planning scene as a whole to be visible or not
+   * @param visible Should we be visible?
+   */
+  void setVisible(const bool& visible);
+
+  /**
+   * \brief Set whether the visual meshes of the planning scene should be visible
+   * @param visible Whether the visual meshes of the planning scene should be visible
+   */
+  void setVisualVisible(const bool& visible);
+
+  /**
+   * \brief Set whether the collision meshes/primitives of the planning scene should be visible
+   * @param visible Whether the collision meshes/primitives should be visible
+   */
+  void setCollisionVisible(const bool& visible);
+
   void renderPlanningScene(const planning_scene::PlanningSceneConstPtr& scene, const rviz::Color& default_scene_color,
                            const rviz::Color& default_attached_color, OctreeVoxelRenderMode voxel_render_mode,
                            OctreeVoxelColorMode voxel_color_mode, float default_scene_alpha);
@@ -87,5 +106,8 @@ private:
   rviz::DisplayContext* context_;
   RenderShapesPtr render_shapes_;
   RobotStateVisualizationPtr scene_robot_;
+  bool visible_;
+  bool visual_visible_;
+  bool collision_visible_;
 };
 }  // namespace moveit_rviz_plugin

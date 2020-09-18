@@ -39,6 +39,7 @@
 #include <moveit/macros/class_forward.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/rviz_plugin_render_tools/octomap_render.h>
+#include <geometric_shapes/shape_operations.h>
 #include <moveit/macros/diagnostics.h>
 DIAGNOSTIC_PUSH
 SILENT_UNUSED_PARAM

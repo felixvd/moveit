@@ -1,0 +1,163 @@
+### ERROR LOG when running rviz and adding MotionPlanning plugin
+
+
+root@felix-OMEN-by-HP-Desktop-PC-880-p1xx:/opt/ros/melodic/bin# valgrind rviz
+==9640== Memcheck, a memory error detector
+==9640== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==9640== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==9640== Command: rviz
+==9640== 
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
+[ INFO] [1600361062.623367874]: rviz version 1.13.13
+[ INFO] [1600361062.633993820]: compiled against Qt version 5.9.5
+[ INFO] [1600361062.635359436]: compiled against OGRE version 1.9.0 (Ghadamon)
+[ INFO] [1600361062.985146117]: Forcing OpenGl version 0.
+==9668== Warning: invalid file descriptor 1048564 in syscall close()
+==9668== Warning: invalid file descriptor 1048565 in syscall close()
+==9668== Warning: invalid file descriptor 1048566 in syscall close()
+==9668== Warning: invalid file descriptor 1048567 in syscall close()
+==9668==    Use --log-fd=<number> to select an alternative log fd.
+==9668== Warning: invalid file descriptor 1048568 in syscall close()
+==9668== Warning: invalid file descriptor 1048569 in syscall close()
+==9668== 
+==9668== HEAP SUMMARY:
+==9668==     in use at exit: 11,880,429 bytes in 9,478 blocks
+==9668==   total heap usage: 24,257 allocs, 14,779 frees, 21,853,918 bytes allocated
+==9668== 
+==9668== LEAK SUMMARY:
+==9668==    definitely lost: 2,168 bytes in 5 blocks
+==9668==    indirectly lost: 24 bytes in 1 blocks
+==9668==      possibly lost: 544 bytes in 3 blocks
+==9668==    still reachable: 11,877,693 bytes in 9,469 blocks
+==9668==         suppressed: 0 bytes in 0 blocks
+==9668== Rerun with --leak-check=full to see details of leaked memory
+==9668== 
+==9668== For counts of detected and suppressed errors, rerun with: -v
+==9668== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+[ INFO] [1600361076.282328631]: Stereo is NOT SUPPORTED
+[ INFO] [1600361076.287352164]: OpenGl version: 4.6 (GLSL 4.6).
+==9640== Conditional jump or move depends on uninitialised value(s)
+==9640==    at 0x6943837: __wmemchr_avx2 (memchr-avx2.S:250)
+==9640==    by 0x689E648: internal_fnwmatch (fnmatch_loop.c:168)
+==9640==    by 0x68A1AB7: fnmatch@@GLIBC_2.2.5 (fnmatch.c:434)
+==9640==    by 0x9A3DD51: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9A3DF8F: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AD8BB: Ogre::FileSystemArchive::findFiles(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::STLAllocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*, std::vector<Ogre::FileInfo, Ogre::STLAllocator<Ogre::FileInfo, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AE899: Ogre::FileSystemArchive::findFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9922225: Ogre::ResourceGroupManager::findResourceFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x99226E2: Ogre::ResourceGroupManager::parseResourceGroupScripts(Ogre::ResourceGroupManager::ResourceGroup*) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9923374: Ogre::ResourceGroupManager::initialiseAllResourceGroups() (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x4F83700: rviz::RenderSystem::RenderSystem() (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4F83844: rviz::RenderSystem::get() (in /opt/ros/melodic/lib/librviz.so)
+==9640== 
+==9640== Conditional jump or move depends on uninitialised value(s)
+==9640==    at 0x6943867: __wmemchr_avx2 (memchr-avx2.S:271)
+==9640==    by 0x689E648: internal_fnwmatch (fnmatch_loop.c:168)
+==9640==    by 0x68A1AB7: fnmatch@@GLIBC_2.2.5 (fnmatch.c:434)
+==9640==    by 0x9A3DD51: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9A3DF8F: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AD8BB: Ogre::FileSystemArchive::findFiles(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::STLAllocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*, std::vector<Ogre::FileInfo, Ogre::STLAllocator<Ogre::FileInfo, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AE899: Ogre::FileSystemArchive::findFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9922225: Ogre::ResourceGroupManager::findResourceFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x99226E2: Ogre::ResourceGroupManager::parseResourceGroupScripts(Ogre::ResourceGroupManager::ResourceGroup*) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9923374: Ogre::ResourceGroupManager::initialiseAllResourceGroups() (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x4F83700: rviz::RenderSystem::RenderSystem() (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4F83844: rviz::RenderSystem::get() (in /opt/ros/melodic/lib/librviz.so)
+==9640== 
+==9640== Conditional jump or move depends on uninitialised value(s)
+==9640==    at 0x6943847: __wmemchr_avx2 (memchr-avx2.S:260)
+==9640==    by 0x689E648: internal_fnwmatch (fnmatch_loop.c:168)
+==9640==    by 0x68A1AB7: fnmatch@@GLIBC_2.2.5 (fnmatch.c:434)
+==9640==    by 0x9A3DD51: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9A3DF8F: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AD8BB: Ogre::FileSystemArchive::findFiles(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::STLAllocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*, std::vector<Ogre::FileInfo, Ogre::STLAllocator<Ogre::FileInfo, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AE899: Ogre::FileSystemArchive::findFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9922225: Ogre::ResourceGroupManager::findResourceFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x99226E2: Ogre::ResourceGroupManager::parseResourceGroupScripts(Ogre::ResourceGroupManager::ResourceGroup*) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9923374: Ogre::ResourceGroupManager::initialiseAllResourceGroups() (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x4F83700: rviz::RenderSystem::RenderSystem() (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4F83844: rviz::RenderSystem::get() (in /opt/ros/melodic/lib/librviz.so)
+==9640== 
+==9640== Conditional jump or move depends on uninitialised value(s)
+==9640==    at 0x6943887: __wmemchr_avx2 (memchr-avx2.S:282)
+==9640==    by 0x689E648: internal_fnwmatch (fnmatch_loop.c:168)
+==9640==    by 0x68A1AB7: fnmatch@@GLIBC_2.2.5 (fnmatch.c:434)
+==9640==    by 0x9A3DD51: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9A3DF8F: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AD8BB: Ogre::FileSystemArchive::findFiles(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::STLAllocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*, std::vector<Ogre::FileInfo, Ogre::STLAllocator<Ogre::FileInfo, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AE899: Ogre::FileSystemArchive::findFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9922225: Ogre::ResourceGroupManager::findResourceFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x99226E2: Ogre::ResourceGroupManager::parseResourceGroupScripts(Ogre::ResourceGroupManager::ResourceGroup*) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9923374: Ogre::ResourceGroupManager::initialiseAllResourceGroups() (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x4F83700: rviz::RenderSystem::RenderSystem() (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4F83844: rviz::RenderSystem::get() (in /opt/ros/melodic/lib/librviz.so)
+==9640== 
+==9640== Conditional jump or move depends on uninitialised value(s)
+==9640==    at 0x69436BC: __wmemchr_avx2 (memchr-avx2.S:102)
+==9640==    by 0x689E648: internal_fnwmatch (fnmatch_loop.c:168)
+==9640==    by 0x68A1AB7: fnmatch@@GLIBC_2.2.5 (fnmatch.c:434)
+==9640==    by 0x9A3DD51: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9A3DF8F: ??? (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AD8BB: Ogre::FileSystemArchive::findFiles(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::STLAllocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*, std::vector<Ogre::FileInfo, Ogre::STLAllocator<Ogre::FileInfo, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x97AE899: Ogre::FileSystemArchive::findFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool) const (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9922225: Ogre::ResourceGroupManager::findResourceFileInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x99226E2: Ogre::ResourceGroupManager::parseResourceGroupScripts(Ogre::ResourceGroupManager::ResourceGroup*) (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x9923374: Ogre::ResourceGroupManager::initialiseAllResourceGroups() (in /usr/lib/x86_64-linux-gnu/libOgreMain.so.1.9.0)
+==9640==    by 0x4F83700: rviz::RenderSystem::RenderSystem() (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4F83844: rviz::RenderSystem::get() (in /opt/ros/melodic/lib/librviz.so)
+==9640== 
+==9640== Invalid write of size 1
+==9640==    at 0x3D6FA4DD: moveit_rviz_plugin::PlanningSceneRender::setVisible(bool const&) (planning_scene_render.cpp:76)
+==9640==    by 0x3908BD60: moveit_rviz_plugin::PlanningSceneDisplay::onInitialize() (planning_scene_display.cpp:200)
+==9640==    by 0x38CC427E: moveit_rviz_plugin::MotionPlanningDisplay::onInitialize() (motion_planning_display.cpp:203)
+==9640==    by 0x4F136FC: rviz::Display::initialize(rviz::DisplayContext*) (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4FF31E3: rviz::VisualizationManager::addDisplay(rviz::Display*, bool) (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4FF3945: rviz::VisualizationManager::createDisplay(QString const&, QString const&, bool) (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4F2CE00: rviz::DisplaysPanel::onNewDisplay() (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x5D81554: QMetaObject::activate(QObject*, int, int, void**) (in /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.9.5)
+==9640==    by 0x54C6BA1: QAbstractButton::clicked(bool) (in /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.9.5)
+==9640==    by 0x54C6DB9: ??? (in /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.9.5)
+==9640==    by 0x54C8199: ??? (in /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.9.5)
+==9640==    by 0x54C838C: QAbstractButton::mouseReleaseEvent(QMouseEvent*) (in /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.9.5)
+==9640==  Address 0x30 is not stack'd, malloc'd or (recently) free'd
+==9640== 
+==9640== 
+==9640== Process terminating with default action of signal 11 (SIGSEGV): dumping core
+==9640==  Access not within mapped region at address 0x30
+==9640==    at 0x3D6FA4DD: moveit_rviz_plugin::PlanningSceneRender::setVisible(bool const&) (planning_scene_render.cpp:76)
+==9640==    by 0x3908BD60: moveit_rviz_plugin::PlanningSceneDisplay::onInitialize() (planning_scene_display.cpp:200)
+==9640==    by 0x38CC427E: moveit_rviz_plugin::MotionPlanningDisplay::onInitialize() (motion_planning_display.cpp:203)
+==9640==    by 0x4F136FC: rviz::Display::initialize(rviz::DisplayContext*) (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4FF31E3: rviz::VisualizationManager::addDisplay(rviz::Display*, bool) (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4FF3945: rviz::VisualizationManager::createDisplay(QString const&, QString const&, bool) (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x4F2CE00: rviz::DisplaysPanel::onNewDisplay() (in /opt/ros/melodic/lib/librviz.so)
+==9640==    by 0x5D81554: QMetaObject::activate(QObject*, int, int, void**) (in /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.9.5)
+==9640==    by 0x54C6BA1: QAbstractButton::clicked(bool) (in /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.9.5)
+==9640==    by 0x54C6DB9: ??? (in /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.9.5)
+==9640==    by 0x54C8199: ??? (in /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.9.5)
+==9640==    by 0x54C838C: QAbstractButton::mouseReleaseEvent(QMouseEvent*) (in /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.9.5)
+==9640==  If you believe this happened as a result of a stack
+==9640==  overflow in your program's main thread (unlikely but
+==9640==  possible), you can try to increase the size of the
+==9640==  main thread stack using the --main-stacksize= flag.
+==9640==  The main thread stack size used in this run was 8388608.
+==9640== 
+==9640== HEAP SUMMARY:
+==9640==     in use at exit: 69,613,720 bytes in 38,884 blocks
+==9640==   total heap usage: 460,492 allocs, 421,608 frees, 7,769,286,609 bytes allocated
+==9640== 
+==9640== LEAK SUMMARY:
+==9640==    definitely lost: 14,976 bytes in 17 blocks
+==9640==    indirectly lost: 44,584 bytes in 308 blocks
+==9640==      possibly lost: 39,483,198 bytes in 780 blocks
+==9640==    still reachable: 30,070,962 bytes in 37,779 blocks
+==9640==                       of which reachable via heuristic:
+==9640==                         newarray           : 16 bytes in 1 blocks
+==9640==                         multipleinheritance: 4,120 bytes in 20 blocks
+==9640==         suppressed: 0 bytes in 0 blocks
+==9640== Rerun with --leak-check=full to see details of leaked memory
+==9640== 
+==9640== For counts of detected and suppressed errors, rerun with: -v
+==9640== Use --track-origins=yes to see where uninitialised values come from
+==9640== ERROR SUMMARY: 402 errors from 6 contexts (suppressed: 3 from 1)
+Segmentation fault (core dumped)
