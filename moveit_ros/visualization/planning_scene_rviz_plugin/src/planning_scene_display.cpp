@@ -197,11 +197,14 @@ void PlanningSceneDisplay::onInitialize()
     planning_scene_robot_->setVisible(true);
     planning_scene_robot_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
     planning_scene_robot_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
+    changedRobotSceneAlpha();
+    changedAttachedBodyColor();
+  }
+  if (planning_scene_render_)
+  {
     planning_scene_render_->setVisible(true);
     planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
     planning_scene_render_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
-    changedRobotSceneAlpha();
-    changedAttachedBodyColor();
   }
 }
 
@@ -219,6 +222,9 @@ void PlanningSceneDisplay::reset()
     planning_scene_robot_->setVisible(true);
     planning_scene_robot_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
     planning_scene_robot_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
+  }
+  if (planning_scene_render_)
+  {
     planning_scene_render_->setVisible(true);
     planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
     planning_scene_render_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
@@ -417,8 +423,11 @@ void PlanningSceneDisplay::changedSceneRobotVisualEnabled()
   {
     planning_scene_robot_->setVisible(true);
     planning_scene_robot_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
-    planning_scene_render_->setVisible(true);
-    planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
+    if (planning_scene_render_)
+    {
+      planning_scene_render_->setVisible(true);
+      planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
+    }
     planning_scene_needs_render_ = true;
   }
 }
@@ -429,8 +438,11 @@ void PlanningSceneDisplay::changedSceneRobotCollisionEnabled()
   {
     planning_scene_robot_->setVisible(true);
     planning_scene_robot_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
-    planning_scene_render_->setVisible(true);
-    planning_scene_render_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
+    if (planning_scene_render_)
+    {
+      planning_scene_render_->setVisible(true);
+      planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
+    }
     planning_scene_needs_render_ = true;
   }
 }
@@ -566,6 +578,8 @@ void PlanningSceneDisplay::onRobotModelLoaded()
   changedPlanningSceneTopic();
   planning_scene_render_.reset(new PlanningSceneRender(planning_scene_node_, context_, planning_scene_robot_));
   planning_scene_render_->getGeometryNode()->setVisible(scene_enabled_property_->getBool());
+  planning_scene_render_->setVisible(true);
+  planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
 
   const planning_scene_monitor::LockedPlanningSceneRO& ps = getPlanningSceneRO();
   if (planning_scene_robot_)
@@ -615,7 +629,12 @@ void PlanningSceneDisplay::onEnable()
     planning_scene_robot_->setCollisionVisible(scene_robot_collision_enabled_property_->getBool());
   }
   if (planning_scene_render_)
+  {
     planning_scene_render_->getGeometryNode()->setVisible(scene_enabled_property_->getBool());
+    planning_scene_render_->setVisible(true);
+    planning_scene_render_->setVisualVisible(scene_robot_visual_enabled_property_->getBool());
+  }
+    
 
   calculateOffsetPosition();
   planning_scene_needs_render_ = true;
