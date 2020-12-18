@@ -55,10 +55,13 @@ except:
 
 
 class PlanningSceneInterface(object):
-    """ Simple interface to making updates to a planning scene """
+    """ 
+    Python interface for a planning scene.
+    Uses both C++ wrapped methods and scene manipulation topics.
+    See wrap_python_planning_scene_interface.cpp for the wrapped methods.
+    """
 
     def __init__(self, ns='', synchronous=False, service_timeout=5.0):
-        """ Create a planning scene interface; it uses both C++ wrapped methods and scene manipulation topics. """
         self._psi = _moveit_planning_scene_interface.PlanningSceneInterface(ns)
 
         self._pub_co = rospy.Publisher(ns_join(ns, 'collision_object'), CollisionObject, queue_size=100)
@@ -261,6 +264,18 @@ class PlanningSceneInterface(object):
             conversions.msg_from_string(msg, ser_aobjs[key])
             aobjs[key] = msg
         return aobjs
+    
+    def apply_collision_object(self, collision_object_message):
+        """
+        Applies the collision object message to the scene.
+        """
+        return self._psi.apply_collision_object(conversions.msg_to_string(collision_object_message))
+    
+    def apply_planning_scene(self, planning_scene_message):
+        """
+        Applies the planning scene message.
+        """
+        return self._psi.apply_planning_scene(conversions.msg_to_string(planning_scene_message))
 
     @staticmethod
     def __make_existing(name):
