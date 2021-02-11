@@ -3,6 +3,8 @@
 API changes in MoveIt releases
 
 ## ROS Noetic
+- `CollisionObject` messages are now defined with a `Pose`. This makes it easier to place objects with multiple shapes and subframes in the scene.
+  Note that `getFrameTransform()` now returns this pose instead of the first shape's pose.
 - RobotModel no longer overrides empty URDF collision geometry by matching the visual geometry of the link.
 - Planned trajectories are *slow* by default.
   The default values of the `velocity_scaling_factor` and `acceleration_scaling_factor` can now be customized and default to 0.1 instead of 1.0.
