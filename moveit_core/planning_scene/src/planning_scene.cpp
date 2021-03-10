@@ -1511,13 +1511,14 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
       }
       else  // If object is not in the world, use the message contents
       {
-        Eigen::Isometry3d pose;
-        PlanningScene::poseMsgToEigen(object.object.pose, pose);
+        Eigen::Isometry3d header_frame_to_object_pose;
+        PlanningScene::poseMsgToEigen(object.object.pose, header_frame_to_object_pose);
         // TODO(felixvd): Use _msgToAttachedBody from robot_state/conversions.cpp here and
         //                make a helper function for the other branch (getAttachedBodyFromWorld)
         const Eigen::Isometry3d world_to_header_frame = getFrameTransform(object.object.header.frame_id);
-        Eigen::Isometry3d t = world_to_header_frame.inverse() * robot_state_->getGlobalLinkTransform(link_model);
-        object_pose_in_link = pose * t;
+        const Eigen::Isometry3d link_to_header_frame =
+            robot_state_->getGlobalLinkTransform(link_model).inverse() * world_to_header_frame;
+        object_pose_in_link = link_to_header_frame * header_frame_to_object_pose;
 
         for (std::size_t i = 0; i < object.object.primitives.size(); ++i)
         {
