@@ -288,12 +288,9 @@ TYPED_TEST_P(DistanceCheckPandaTest, DistanceSingle)
     rng.quaternion(quat);
     pose.linear() = Eigen::Quaterniond(quat[0], quat[1], quat[2], quat[3]).toRotationMatrix();
 
-    // TODO(felixvd): Check why this distance check has trouble in FCL (but not bullet)
-    // this->cenv_->getWorld()->addToObject("collection", pose, shape, Eigen::Isometry3d::Identity());
-    this->cenv_->getWorld()->addToObject("collection", shape, pose);
+    this->cenv_->getWorld()->addToObject("collection", Eigen::Isometry3d::Identity(), shape, pose);
     this->cenv_->getWorld()->removeObject("object");
-    // this->cenv_->getWorld()->addToObject("object", pose, shape, Eigen::Isometry3d::Identity());
-    this->cenv_->getWorld()->addToObject("object", shape, pose);
+    this->cenv_->getWorld()->addToObject("object", pose, shape, Eigen::Isometry3d::Identity());
 
     this->cenv_->distanceRobot(req, res, *this->robot_state_);
     auto& distances1 = res.distances[std::pair<std::string, std::string>("collection", "panda_hand")];
