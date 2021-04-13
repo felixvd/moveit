@@ -106,7 +106,7 @@ void planning_pipeline::PlanningPipeline::configure()
   }
   if (planner_plugin_name_.empty() && classes.size() > 1)
   {
-    planner_plugin_name_ = classes[0];
+    planner_plugin_name_ = classes[1];
     ROS_INFO("Multiple planning plugins available. You should specify the '~planning_plugin' parameter. Using '%s' for "
              "now.",
              planner_plugin_name_.c_str());
