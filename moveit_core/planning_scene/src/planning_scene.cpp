@@ -1779,38 +1779,30 @@ bool PlanningScene::processCollisionObjectAdd(const moveit_msgs::CollisionObject
   PlanningScene::poseMsgToEigen(object.pose, header_to_pose_transform);
   const Eigen::Isometry3d object_frame_transform = world_to_object_header_transform * header_to_pose_transform;
 
-  world_->setObjectPose(object.id, object_frame_transform);
+  std::vector<shapes::ShapeConstPtr> shapes;
+  EigenSTL::vector_Isometry3d shape_poses;
+  const auto num_shapes = object.primitives.size() + object.meshes.size() + object.planes.size();
+  shapes.reserve(num_shapes);
+  shape_poses.reserve(num_shapes);
+
+  auto append = [&shapes, &shape_poses](shapes::Shape* s, const geometry_msgs::Pose& pose_msg) {
+    if (!s)
+      return;
+    Eigen::Isometry3d pose;
+    PlanningScene::poseMsgToEigen(pose_msg, pose);
+    shapes.emplace_back(shapes::ShapeConstPtr(s));
+    shape_poses.emplace_back(std::move(pose));
+  };
 
   for (std::size_t i = 0; i < object.primitives.size(); ++i)
-  {
-    shapes::Shape* s = shapes::constructShapeFromMsg(object.primitives[i]);
-    if (s)
-    {
-      Eigen::Isometry3d shape_pose;
-      PlanningScene::poseMsgToEigen(object.primitive_poses[i], shape_pose);
-      world_->addToObject(object.id, shapes::ShapeConstPtr(s), shape_pose);
-    }
-  }
+    append(shapes::constructShapeFromMsg(object.primitives[i]), object.primitive_poses[i]);
   for (std::size_t i = 0; i < object.meshes.size(); ++i)
-  {
-    shapes::Shape* s = shapes::constructShapeFromMsg(object.meshes[i]);
-    if (s)
-    {
-      Eigen::Isometry3d shape_pose;
-      PlanningScene::poseMsgToEigen(object.mesh_poses[i], shape_pose);
-      world_->addToObject(object.id, shapes::ShapeConstPtr(s), shape_pose);
-    }
-  }
+    append(shapes::constructShapeFromMsg(object.meshes[i]), object.mesh_poses[i]);
   for (std::size_t i = 0; i < object.planes.size(); ++i)
-  {
-    shapes::Shape* s = shapes::constructShapeFromMsg(object.planes[i]);
-    if (s)
-    {
-      Eigen::Isometry3d shape_pose;
-      PlanningScene::poseMsgToEigen(object.plane_poses[i], shape_pose);
-      world_->addToObject(object.id, shapes::ShapeConstPtr(s), shape_pose);
-    }
-  }
+    append(shapes::constructShapeFromMsg(object.planes[i]), object.plane_poses[i]);
+
+  world_->addToObject(object.id, object_frame_transform, shapes, shape_poses);
+
   if (!object.type.key.empty() || !object.type.db.empty())
     setObjectType(object.id, object.type);
 
