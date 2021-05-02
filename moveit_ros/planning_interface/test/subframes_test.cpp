@@ -62,7 +62,7 @@ constexpr double EPSILON = 1e-2;
 constexpr double Z_OFFSET = 0.05;
 constexpr double PLANNING_TIME_S = 30.0;
 
-const double TAU = 2 * M_PI;
+const double TAU = 2 * M_PI;  // One turn (360°) in radians
 
 // Function copied from tutorial
 // a small helper function to create our planning requests and move the robot.
@@ -114,7 +114,7 @@ void spawnCollisionObjects(moveit::planning_interface::PlanningSceneInterface& p
   box.subframe_poses[0].position.y = -.05;
 
   tf2::Quaternion orientation;
-  orientation.setRPY(TAU / 4.0, 0, 0);
+  orientation.setRPY(TAU / 4.0, 0, 0);  // 1/4 turn
   box.subframe_poses[0].orientation = tf2::toMsg(orientation);
 
   // Next, define the cylinder
